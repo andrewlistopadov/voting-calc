@@ -1,0 +1,23 @@
+:host {
+  display: flex;
+}
+
+.toolbar-item + .toolbar-item {
+  margin-left: 20px;
+}
+
+.aligned-right {
+  margin-left: auto;
+}
+
+/* button + button {
+  margin-left: 5px;
+} */
+
+.inspector-name {
+  width: 200px;
+}
+
+.total-square {
+  width: 120px;
+}
