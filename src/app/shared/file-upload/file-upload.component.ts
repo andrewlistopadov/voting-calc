@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 
 @Component({
   selector: 'file-upload',
@@ -8,15 +14,16 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 })
 export class FileUploadComponent {
   @Input() requiredFileType: string = '';
+  @Output() fileSelected: EventEmitter<File> = new EventEmitter<File>();
 
   public fileName = '';
 
   public onFileSelected(event: Event): void {
     const file: File = (event.target as HTMLInputElement).files![0];
 
-    console.log(file);
     if (file) {
       this.fileName = file.name;
+      this.fileSelected.emit(file);
     }
   }
 }

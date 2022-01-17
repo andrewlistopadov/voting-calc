@@ -1,10 +1,13 @@
 <div class="toolbar-item">
-  <file-upload requiredFileType=".csv"></file-upload>
+  <file-upload
+    requiredFileType=".csv"
+    (fileSelected)="fileUploaded.emit($event)"
+  ></file-upload>
 </div>
 <div class="toolbar-item">
-  <button mat-button color="primary" class="upload-btn" (click)="export()">
+  <!-- <button mat-button color="primary" class="upload-btn" (click)="export()">
     <mat-icon>add</mat-icon>
-  </button>
+  </button> -->
   <button mat-button color="warn" class="upload-btn" (click)="export()">
     <mat-icon>delete</mat-icon>
   </button>
@@ -13,15 +16,15 @@
   </button>
 </div>
 
-<mat-form-field class="toolbar-item inspector-name">
-  <mat-label>Inspector Name</mat-label>
-  <input matInput type="text" [(ngModel)]="inspectorName" />
+<mat-form-field class="toolbar-item vote-name">
+  <mat-label>Vote Name</mat-label>
+  <input matInput type="text" [(ngModel)]="voteName" />
   <button
-    *ngIf="inspectorName"
+    *ngIf="voteName"
     matSuffix
     mat-icon-button
     aria-label="Clear"
-    (click)="inspectorName = ''; $event.stopPropagation()"
+    (click)="voteName = ''; $event.stopPropagation()"
   >
     <mat-icon>close</mat-icon>
   </button>
@@ -36,6 +39,20 @@
     mat-icon-button
     aria-label="Clear"
     (click)="totalSquare = null; $event.stopPropagation()"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-form-field>
+
+<mat-form-field class="toolbar-item inspector-name">
+  <mat-label>Inspector Name</mat-label>
+  <input matInput type="text" [(ngModel)]="inspectorName" />
+  <button
+    *ngIf="inspectorName"
+    matSuffix
+    mat-icon-button
+    aria-label="Clear"
+    (click)="inspectorName = ''; $event.stopPropagation()"
   >
     <mat-icon>close</mat-icon>
   </button>

@@ -1,2 +1,11 @@
-<voting-calc-toolbar></voting-calc-toolbar>
-<voting-calc-table></voting-calc-table>
+<voting-calc-toolbar
+  [voteName]="voteName$ | async"
+  [inspectorName]="inspectorName$ | async"
+  [totalSquare]="totalSquare$ | async"
+  (fileUploaded)="fileUploaded($event)"
+></voting-calc-toolbar>
+<voting-calc-table
+  *ngIf="file"
+  [columns]="(columns$ | async)!"
+  [rows]="(rows$ | async)!"
+></voting-calc-table>
