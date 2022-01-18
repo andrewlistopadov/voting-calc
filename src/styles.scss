@@ -1,6 +1,7 @@
 @import "./styles/main.scss";
 @import "./styles/angular-material-ui-patch.scss";
-@import "./styles/ngx-datatable-patch.scss";
+/* @import "./styles/ngx-datatable-patch.scss"; */
+@import "./styles/ag-grid-patch.scss";
 
 html,
 body {

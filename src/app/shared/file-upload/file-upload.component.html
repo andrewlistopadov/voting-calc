@@ -16,5 +16,7 @@
     <mat-icon>attach_file</mat-icon>
   </button>
 
-  <span class="file-name">{{ fileName || "No file uploaded yet." }}</span>
+  <span class="file-name" [title]="fileName">{{
+    fileName || "No file uploaded yet."
+  }}</span>
 </div>

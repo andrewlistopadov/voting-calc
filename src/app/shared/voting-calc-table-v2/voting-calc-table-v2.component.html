@@ -1,0 +1,7 @@
+<ag-grid-angular
+  class="ag-theme-alpine"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  (cellValueChanged)="cellValueChanged.emit($event)"
+></ag-grid-angular>

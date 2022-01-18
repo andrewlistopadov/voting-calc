@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { Subject } from 'rxjs';
+import { ColDef } from 'ag-grid-community';
+import { BehaviorSubject, Subject } from 'rxjs';
 import {
-  normalizeColumns,
-  NormalizedColumn,
-  NormalizedRow,
-  normalizeRows,
+  getDefaultColDef,
+  normalizeColumns2,
+  NormalizedRow2,
+  normalizeRows2,
 } from 'src/app/core/normalize-table-content';
 import { parseVotingContent } from 'src/app/core/parse-voting-content';
-import data from './dummy.json';
 
 @Component({
   selector: 'home-page',
@@ -22,8 +22,13 @@ export class HomePageComponent implements OnInit {
   public inspectorName$: Subject<string | null> = new Subject();
   public totalSquare$: Subject<number | null> = new Subject();
 
-  public columns$: Subject<NormalizedColumn[]> = new Subject();
-  public rows$: Subject<NormalizedRow[]> = new Subject();
+  public defaultColDef$: BehaviorSubject<ColDef> = new BehaviorSubject({});
+  public columnDefs$: BehaviorSubject<ColDef[]> = new BehaviorSubject(
+    [] as ColDef[]
+  );
+  public rowData$: BehaviorSubject<NormalizedRow2[]> = new BehaviorSubject(
+    [] as NormalizedRow2[]
+  );
 
   public fileUploaded(file: File): void {
     this.file = file;
@@ -38,14 +43,17 @@ export class HomePageComponent implements OnInit {
 
       const { voteName, totalSquare, inspectorName, columns, rows } =
         parseVotingContent(votingContent);
-      const normalizedColumns = normalizeColumns(columns);
-      const normalizedRows = normalizeRows(columns, rows);
+
+      const normalizedColumns = normalizeColumns2(columns);
+      const normalizedRows = normalizeRows2(columns, rows);
 
       this.voteName$.next(voteName);
       this.inspectorName$.next(inspectorName);
       this.totalSquare$.next(totalSquare);
-      this.columns$.next(normalizedColumns);
-      this.rows$.next(normalizedRows);
+
+      this.defaultColDef$.next(getDefaultColDef());
+      this.columnDefs$.next(normalizedColumns);
+      this.rowData$.next(normalizedRows);
     };
 
     reader.onerror = () => {
@@ -55,10 +63,5 @@ export class HomePageComponent implements OnInit {
 
   constructor() {}
 
-  ngOnInit(): void {
-    // setTimeout(() => {
-    //   console.log(data);
-    //   this.rows$.next(data);
-    // }, 100);
-  }
+  ngOnInit(): void {}
 }

@@ -4,17 +4,6 @@
     (fileSelected)="fileUploaded.emit($event)"
   ></file-upload>
 </div>
-<div class="toolbar-item">
-  <!-- <button mat-button color="primary" class="upload-btn" (click)="export()">
-    <mat-icon>add</mat-icon>
-  </button> -->
-  <button mat-button color="warn" class="upload-btn" (click)="export()">
-    <mat-icon>delete</mat-icon>
-  </button>
-  <button mat-button color="basic" class="upload-btn" (click)="export()">
-    <mat-icon>save</mat-icon>
-  </button>
-</div>
 
 <mat-form-field class="toolbar-item vote-name">
   <mat-label>Vote Name</mat-label>
@@ -57,3 +46,16 @@
     <mat-icon>close</mat-icon>
   </button>
 </mat-form-field>
+
+<div class="toolbar-item--aligned-right">
+  <!-- <button mat-button color="primary" class="upload-btn" (click)="export()">
+    <mat-icon>add</mat-icon>
+  </button> -->
+
+  <button mat-button color="basic" class="upload-btn" (click)="export()">
+    <mat-icon>save</mat-icon>
+  </button>
+  <button mat-button color="warn" class="upload-btn" (click)="export()">
+    <mat-icon>delete</mat-icon>
+  </button>
+</div>

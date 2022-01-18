@@ -4,8 +4,8 @@
   [totalSquare]="totalSquare$ | async"
   (fileUploaded)="fileUploaded($event)"
 ></voting-calc-toolbar>
-<voting-calc-table
-  *ngIf="file"
-  [columns]="(columns$ | async)!"
-  [rows]="(rows$ | async)!"
-></voting-calc-table>
+<voting-calc-table-v2
+  [defaultColDef]="(defaultColDef$ | async)!"
+  [columnDefs]="(columnDefs$ | async)!"
+  [rowData]="(rowData$ | async)!"
+></voting-calc-table-v2>
