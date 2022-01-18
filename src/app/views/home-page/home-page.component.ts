@@ -3,9 +3,9 @@ import { ColDef } from 'ag-grid-community';
 import { BehaviorSubject, Subject } from 'rxjs';
 import {
   getDefaultColDef,
-  normalizeColumns2,
-  NormalizedRow2,
-  normalizeRows2,
+  normalizeColumns,
+  NormalizedRow,
+  normalizeRows,
 } from 'src/app/core/normalize-table-content';
 import { parseVotingContent } from 'src/app/core/parse-voting-content';
 
@@ -26,8 +26,8 @@ export class HomePageComponent implements OnInit {
   public columnDefs$: BehaviorSubject<ColDef[]> = new BehaviorSubject(
     [] as ColDef[]
   );
-  public rowData$: BehaviorSubject<NormalizedRow2[]> = new BehaviorSubject(
-    [] as NormalizedRow2[]
+  public rowData$: BehaviorSubject<NormalizedRow[]> = new BehaviorSubject(
+    [] as NormalizedRow[]
   );
 
   public fileUploaded(file: File): void {
@@ -44,8 +44,8 @@ export class HomePageComponent implements OnInit {
       const { voteName, totalSquare, inspectorName, columns, rows } =
         parseVotingContent(votingContent);
 
-      const normalizedColumns = normalizeColumns2(columns);
-      const normalizedRows = normalizeRows2(columns, rows);
+      const normalizedColumns = normalizeColumns(columns);
+      const normalizedRows = normalizeRows(columns, rows);
 
       this.voteName$.next(voteName);
       this.inspectorName$.next(inspectorName);

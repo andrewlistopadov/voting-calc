@@ -4,8 +4,8 @@
   [totalSquare]="totalSquare$ | async"
   (fileUploaded)="fileUploaded($event)"
 ></voting-calc-toolbar>
-<voting-calc-table-v2
+<voting-calc-table
   [defaultColDef]="(defaultColDef$ | async)!"
   [columnDefs]="(columnDefs$ | async)!"
   [rowData]="(rowData$ | async)!"
-></voting-calc-table-v2>
+></voting-calc-table>
