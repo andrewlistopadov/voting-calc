@@ -4,8 +4,10 @@
   [totalSquare]="totalSquare$ | async"
   (fileUploaded)="fileUploaded($event)"
 ></voting-calc-toolbar>
-<voting-calc-table
-  [defaultColDef]="(defaultColDef$ | async)!"
-  [columnDefs]="(columnDefs$ | async)!"
+<ag-grid-angular
+  class="ag-theme-alpine"
   [rowData]="(rowData$ | async)!"
-></voting-calc-table>
+  [columnDefs]="(columnDefs$ | async)!"
+  [defaultColDef]="(defaultColDef$ | async)!"
+  (cellValueChanged)="cellValueChanged($event)"
+></ag-grid-angular>

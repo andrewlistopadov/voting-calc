@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { ColDef } from 'ag-grid-community';
+import { CellValueChangedEvent, ColDef } from 'ag-grid-community';
 import { BehaviorSubject, Subject } from 'rxjs';
 import {
   getDefaultColDef,
@@ -57,8 +57,13 @@ export class HomePageComponent implements OnInit {
     };
 
     reader.onerror = () => {
+      // TODO update to material popup
       console.error(reader.error);
     };
+  }
+
+  public cellValueChanged(e: CellValueChangedEvent): void {
+    console.log(e);
   }
 
   constructor() {}
