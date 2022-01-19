@@ -1,3 +1,12 @@
 button.mat-button {
   min-width: auto;
 }
+
+.cdk-overlay-pane {
+  width: 100vw;
+  justify-content: center;
+}
+
+.mat-bottom-sheet-container {
+  max-width: calc(100vw - 40px) !important;
+}
