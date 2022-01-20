@@ -3,9 +3,17 @@
   flex-direction: column;
   height: 100%;
   overflow: auto;
+}
+
+voting-calc-toolbar {
   padding: 20px 20px 0 20px;
 }
 
 ag-grid-angular {
   height: 100%;
+  padding: 10px 20px 10px 20px;
+}
+
+voting-calc-results {
+  padding: 10px 20px 10px 20px;
 }
