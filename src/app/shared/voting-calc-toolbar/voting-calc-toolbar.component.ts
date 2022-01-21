@@ -7,6 +7,12 @@ import {
   Output,
 } from '@angular/core';
 
+export interface ToolbarData {
+  voteName: string;
+  inspectorName: string;
+  totalSquare: number;
+}
+
 @Component({
   selector: 'voting-calc-toolbar',
   templateUrl: './voting-calc-toolbar.component.html',
@@ -19,6 +25,8 @@ export class VotingCalcToolbarComponent implements OnInit {
   @Input() totalSquare: number | null = null;
 
   @Output() fileUploaded: EventEmitter<File> = new EventEmitter<File>();
+  @Output() save: EventEmitter<ToolbarData> = new EventEmitter<ToolbarData>();
+  @Output() delete: EventEmitter<void> = new EventEmitter<void>();
 
   public export(): void {}
 

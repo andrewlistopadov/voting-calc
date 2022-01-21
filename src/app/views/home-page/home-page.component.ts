@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { CellValueChangedEvent, ColDef } from 'ag-grid-community';
+import {
+  CellValueChangedEvent,
+  ColDef,
+  GridReadyEvent,
+} from 'ag-grid-community';
 import { BehaviorSubject, Subject } from 'rxjs';
 import {
   getDefaultColDef,
@@ -8,6 +12,8 @@ import {
   normalizeRows,
 } from 'src/app/core/normalize-table-content';
 import { parseVotingContent } from 'src/app/core/parse-voting-content';
+import { ToolbarData } from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
+import { VotingCalcPageService } from './voting-calc-page.service';
 
 @Component({
   selector: 'home-page',
@@ -62,11 +68,23 @@ export class HomePageComponent implements OnInit {
     };
   }
 
+  public save(e: ToolbarData): void {
+    // e.colDef.field - '3'
+    // e.data.id - "c86cca40-79e4-11ec-ae45-595e957334c9"
+    this.votingCalcPageService.downloadVotingCalcDataAsCsv(e);
+  }
+
   public cellValueChanged(e: CellValueChangedEvent): void {
+    // e.colDef.field - '3'
+    // e.data.id - "c86cca40-79e4-11ec-ae45-595e957334c9"
     console.log(e);
   }
 
-  constructor() {}
+  public onGridReady(params: GridReadyEvent): void {
+    this.votingCalcPageService.setGridApi(params);
+  }
+
+  constructor(private votingCalcPageService: VotingCalcPageService) {}
 
   ngOnInit(): void {}
 }

@@ -1,6 +1,6 @@
 <div class="toolbar-item">
   <file-upload
-    requiredFileType=".csv"
+    requiredFileType=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
     (fileSelected)="fileUploaded.emit($event)"
   ></file-upload>
 </div>
@@ -14,20 +14,6 @@
     mat-icon-button
     aria-label="Clear"
     (click)="voteName = ''; $event.stopPropagation()"
-  >
-    <mat-icon>close</mat-icon>
-  </button>
-</mat-form-field>
-
-<mat-form-field class="toolbar-item total-square">
-  <mat-label>S(&#13217;)</mat-label>
-  <input matInput type="text" [(ngModel)]="totalSquare" />
-  <button
-    *ngIf="totalSquare"
-    matSuffix
-    mat-icon-button
-    aria-label="Clear"
-    (click)="totalSquare = null; $event.stopPropagation()"
   >
     <mat-icon>close</mat-icon>
   </button>
@@ -47,15 +33,39 @@
   </button>
 </mat-form-field>
 
-<div class="toolbar-item--aligned-right">
-  <!-- <button mat-button color="primary" class="upload-btn" (click)="export()">
-    <mat-icon>add</mat-icon>
-  </button> -->
+<mat-form-field class="toolbar-item total-square">
+  <mat-label>S(&#13217;)</mat-label>
+  <input matInput type="text" [(ngModel)]="totalSquare" />
+  <button
+    *ngIf="totalSquare"
+    matSuffix
+    mat-icon-button
+    aria-label="Clear"
+    (click)="totalSquare = null; $event.stopPropagation()"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-form-field>
 
-  <button mat-button color="basic" (click)="export()">
+<div class="toolbar-item--aligned-right">
+  <button mat-button color="primary" class="upload-btn" (click)="export()">
+    <mat-icon>add</mat-icon><span>100</span>
+  </button>
+
+  <button
+    mat-button
+    color="basic"
+    (click)="
+      save.emit({
+        voteName: voteName!,
+        inspectorName: inspectorName!,
+        totalSquare: totalSquare!
+      })
+    "
+  >
     <mat-icon>save</mat-icon>
   </button>
-  <button mat-button color="warn" (click)="export()">
+  <button mat-button color="warn" (click)="delete.emit()">
     <mat-icon>delete</mat-icon>
   </button>
 </div>

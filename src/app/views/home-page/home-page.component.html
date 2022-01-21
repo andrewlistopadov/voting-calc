@@ -3,6 +3,7 @@
   [inspectorName]="inspectorName$ | async"
   [totalSquare]="totalSquare$ | async"
   (fileUploaded)="fileUploaded($event)"
+  (save)="save($event)"
 ></voting-calc-toolbar>
 <ag-grid-angular
   class="ag-theme-alpine"
@@ -10,5 +11,6 @@
   [columnDefs]="(columnDefs$ | async)!"
   [defaultColDef]="(defaultColDef$ | async)!"
   (cellValueChanged)="cellValueChanged($event)"
+  (gridReady)="onGridReady($event)"
 ></ag-grid-angular>
 <voting-calc-results [rowData]="(rowData$ | async)!"></voting-calc-results>
