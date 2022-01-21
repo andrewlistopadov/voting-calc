@@ -16,7 +16,7 @@ export function downloadFile(
   type: string,
   filename: string
 ): void {
-  const blob = new Blob([file], { type });
+  const blob = new Blob(['\ufeff', file], { type });
   download(blob, filename);
 }
 
