@@ -20,15 +20,15 @@ export class VotingCalcPageService {
     const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.inspectorName},${toolbarData.totalSquare}`;
 
     const regexLength = this.gridColumnApi.getAllColumns()!.length - 1;
-    const regexPattern = `${new Array(regexLength).join(',')}+`;
-    const regex = new RegExp(regexPattern, 'g');
+    const regexPattern = `(${new Array(regexLength).join(',')}+)|(^\s*[\r\n])`; // removes ,,,,,,,, and empty lines
+    const regex = new RegExp(regexPattern, 'gm');
 
     const votingCalcDataAsCsv = this.gridApi
       .getDataAsCsv({
         prependContent: toolbarDataAsCsv,
         suppressQuotes: true, // without "" escaping
       })!
-      .replace(regex, ''); // delete empty rows
+      .replace(regex, '');
 
     downloadCSV(
       votingCalcDataAsCsv!,
