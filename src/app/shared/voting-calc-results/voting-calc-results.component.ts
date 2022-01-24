@@ -5,7 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { NormalizedRow } from 'src/app/core/normalize-table-content';
+import { NormalizedRow } from 'src/app/core/table-builder';
 import { VotingCalcResultsSheetComponent } from './voting-calc-results-sheet/voting-calc-results-sheet.component';
 
 @Component({

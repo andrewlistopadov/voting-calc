@@ -1,5 +1,9 @@
 :host {
   display: flex;
+}
+
+.toolbar-item-group {
+  display: flex;
   align-items: baseline;
 }
 
@@ -7,8 +11,19 @@
   flex-shrink: 0;
 }
 
-.toolbar-item + .toolbar-item {
+.toolbar-item-group + .toolbar-item-group {
   margin-left: 20px;
+}
+
+.read-only {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolbar-item + .toolbar-item {
+  margin-left: 10px;
 }
 
 .toolbar-item--aligned-right {
@@ -19,10 +34,14 @@
   margin-left: 5px;
 } */
 
-mat-form-field {
+/* mat-form-field {
   width: 200px;
-}
+} */
 
-.total-square {
+/* .total-square {
   width: 120px;
+} */
+
+.read-only {
+  max-width: 200px;
 }

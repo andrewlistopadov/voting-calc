@@ -1,4 +1,4 @@
-export interface IVotingContent {
+export interface IParsedVotingTableContent {
   voteName: string;
   totalSquare: number;
   inspectorName: string;
@@ -6,7 +6,7 @@ export interface IVotingContent {
   rows: string[][];
 }
 
-export function parseVotingContent(content: any): IVotingContent {
+export function parseVotingContent(content: any): IParsedVotingTableContent {
   return {
     voteName: content[0][0],
     inspectorName: content[0][1],

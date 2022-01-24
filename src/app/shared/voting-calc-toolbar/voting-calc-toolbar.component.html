@@ -1,13 +1,19 @@
-<div class="toolbar-item">
+<div class="toolbar-item-group">
   <file-upload
+    class="toolbar-item"
     requiredFileType=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
     (fileSelected)="fileUploaded.emit($event)"
   ></file-upload>
 </div>
 
-<mat-form-field class="toolbar-item vote-name">
+<!-- <mat-form-field class="toolbar-item vote-name">
   <mat-label>Vote Name</mat-label>
-  <input matInput type="text" [(ngModel)]="voteName" />
+  <input
+    matInput
+    type="text"
+    [(ngModel)]="voteName"
+    (ngModelChange)="toolbarDataChanged$.next()"
+  />
   <button
     *ngIf="voteName"
     matSuffix
@@ -17,25 +23,28 @@
   >
     <mat-icon>close</mat-icon>
   </button>
-</mat-form-field>
+</mat-form-field> -->
+<div [class.hidden]="noDataYet" class="toolbar-item-group shown changeable-visibility">
+  <span class="toolbar-item read-only" [title]="voteName">{{ voteName }}</span>
+  <span class="toolbar-item read-only" [title]="totalSquare"><span class="lbl">S(&#13217;)&nbsp;=&nbsp;</span>{{ totalSquare }}</span>
+  <input class="toolbar-item" type="text" [(ngModel)]="inspectorName" (ngModelChange)="toolbarDataChanged$.next()" />
 
-<mat-form-field class="toolbar-item inspector-name">
-  <mat-label>Inspector Name</mat-label>
-  <input matInput type="text" [(ngModel)]="inspectorName" />
-  <button
-    *ngIf="inspectorName"
-    matSuffix
-    mat-icon-button
-    aria-label="Clear"
-    (click)="inspectorName = ''; $event.stopPropagation()"
-  >
-    <mat-icon>close</mat-icon>
-  </button>
-</mat-form-field>
+  <!-- <mat-form-field class="toolbar-item inspector-name">
+    <mat-label>Inspector(s) Name</mat-label>
+    <input matInput type="text" [(ngModel)]="inspectorName" (ngModelChange)="toolbarDataChanged$.next()" />
+    <button *ngIf="inspectorName" matSuffix mat-icon-button aria-label="Clear" (click)="inspectorName = ''; $event.stopPropagation()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field> -->
 
-<mat-form-field class="toolbar-item total-square">
+  <!-- <mat-form-field class="toolbar-item total-square">
   <mat-label>S(&#13217;)</mat-label>
-  <input matInput type="text" [(ngModel)]="totalSquare" />
+  <input
+    matInput
+    type="text"
+    [(ngModel)]="totalSquare"
+    (ngModelChange)="toolbarDataChanged$.next()"
+  />
   <button
     *ngIf="totalSquare"
     matSuffix
@@ -45,27 +54,26 @@
   >
     <mat-icon>close</mat-icon>
   </button>
-</mat-form-field>
+</mat-form-field> -->
 
-<div class="toolbar-item--aligned-right">
-  <button mat-button color="primary" class="upload-btn" (click)="export()">
-    <mat-icon>add</mat-icon><span>100</span>
-  </button>
+  <div class="toolbar-item toolbar-item--aligned-right">
+    <button mat-button color="primary" class="upload-btn" (click)="add.emit()"><mat-icon>add</mat-icon><span>100</span></button>
 
-  <button
-    mat-button
-    color="basic"
-    (click)="
-      save.emit({
-        voteName: voteName!,
-        inspectorName: inspectorName!,
-        totalSquare: totalSquare!
-      })
-    "
-  >
-    <mat-icon>save</mat-icon>
-  </button>
-  <button mat-button color="warn" (click)="delete.emit()">
+    <button
+      mat-button
+      color="basic"
+      (click)="
+        export.emit({
+          voteName: voteName!,
+          inspectorName: inspectorName!,
+          totalSquare: totalSquare!
+        })
+      "
+    >
+      <mat-icon>save</mat-icon>
+    </button>
+    <!-- <button mat-button color="warn" (click)="delete.emit()">
     <mat-icon>delete</mat-icon>
-  </button>
+  </button> -->
+  </div>
 </div>

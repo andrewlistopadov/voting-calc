@@ -2,8 +2,10 @@
   [voteName]="voteName$ | async"
   [inspectorName]="inspectorName$ | async"
   [totalSquare]="totalSquare$ | async"
+  [noDataYet]="(noDataYet$ | async)!"
   (fileUploaded)="fileUploaded($event)"
-  (save)="save($event)"
+  (export)="export($event)"
+  (toolbarDataChanged)="toolbarDataChanged($event)"
 ></voting-calc-toolbar>
 <ag-grid-angular
   class="ag-theme-alpine"

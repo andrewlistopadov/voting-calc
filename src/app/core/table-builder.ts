@@ -5,14 +5,27 @@ export interface NormalizedRow {
   [key: string]: string;
 }
 
-const DEFAULT_TABLE_ROWS_COUNT = 10;
+export interface INormalizedVotingTableContent {
+  voteName: string;
+  totalSquare: number;
+  inspectorName: string;
+  normalizedColumns: ColDef[];
+  normalizedRows: NormalizedRow[];
+}
+
+const INITIAL_ROWS_LENGTH = 500;
+export const ROWS_TO_BE_ADDED_COUNT = 100;
 
 export function normalizeRows(
   columns: string[],
   rows: string[][]
 ): NormalizedRow[] {
   let normalizedRows: NormalizedRow[] = [];
-  for (let i = 0; i < rows.length + DEFAULT_TABLE_ROWS_COUNT; i++) {
+  const rowsCount =
+    rows.length < ROWS_TO_BE_ADDED_COUNT
+      ? INITIAL_ROWS_LENGTH
+      : rows.length + ROWS_TO_BE_ADDED_COUNT;
+  for (let i = 0; i < rowsCount; i++) {
     const normalizedRow: NormalizedRow = Object.assign(
       { id: uuidv4() } as NormalizedRow,
       rows[i] || [...columns].fill('')

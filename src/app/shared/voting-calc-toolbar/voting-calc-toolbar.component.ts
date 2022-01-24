@@ -1,16 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Subject} from 'rxjs';
+import {debounceTime, takeUntil} from 'rxjs/operators';
 
 export interface ToolbarData {
-  voteName: string;
-  inspectorName: string;
-  totalSquare: number;
+  voteName: string | null;
+  inspectorName: string | null;
+  totalSquare: number | null;
 }
 
 @Component({
@@ -23,17 +18,27 @@ export class VotingCalcToolbarComponent implements OnInit {
   @Input() voteName: string | null = null;
   @Input() inspectorName: string | null = null;
   @Input() totalSquare: number | null = null;
+  @Input() noDataYet: boolean = true;
 
   @Output() fileUploaded: EventEmitter<File> = new EventEmitter<File>();
-  @Output() save: EventEmitter<ToolbarData> = new EventEmitter<ToolbarData>();
-  @Output() delete: EventEmitter<void> = new EventEmitter<void>();
+  @Output() export: EventEmitter<ToolbarData> = new EventEmitter<ToolbarData>();
+  @Output() add: EventEmitter<void> = new EventEmitter<void>();
+  // @Output() delete: EventEmitter<void> = new EventEmitter<void>();
+  @Output() toolbarDataChanged: EventEmitter<ToolbarData> = new EventEmitter<ToolbarData>();
 
-  public export(): void {}
+  private destroy$: Subject<void> = new Subject<void>();
 
-  // this.zone.runOutsideAngular
-  public download(): void {}
+  public toolbarDataChanged$: Subject<void> = new Subject();
 
   constructor() {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.toolbarDataChanged$.pipe(debounceTime(1000), takeUntil(this.destroy$)).subscribe(() => {
+      this.toolbarDataChanged.emit({
+        voteName: this.voteName,
+        inspectorName: this.inspectorName,
+        totalSquare: this.totalSquare,
+      });
+    });
+  }
 }
