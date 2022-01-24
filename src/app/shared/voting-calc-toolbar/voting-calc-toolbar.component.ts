@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output}
 import {Subject} from 'rxjs';
 import {debounceTime, takeUntil} from 'rxjs/operators';
 
-export interface ToolbarData {
+export interface VotingToolbarData {
   voteName: string | null;
   inspectorName: string | null;
   totalSquare: number | null;
@@ -21,10 +21,10 @@ export class VotingCalcToolbarComponent implements OnInit {
   @Input() noDataYet: boolean = true;
 
   @Output() fileUploaded: EventEmitter<File> = new EventEmitter<File>();
-  @Output() export: EventEmitter<ToolbarData> = new EventEmitter<ToolbarData>();
+  @Output() export: EventEmitter<VotingToolbarData> = new EventEmitter<VotingToolbarData>();
   @Output() add: EventEmitter<void> = new EventEmitter<void>();
   // @Output() delete: EventEmitter<void> = new EventEmitter<void>();
-  @Output() toolbarDataChanged: EventEmitter<ToolbarData> = new EventEmitter<ToolbarData>();
+  @Output() toolbarDataChanged: EventEmitter<VotingToolbarData> = new EventEmitter<VotingToolbarData>();
 
   private destroy$: Subject<void> = new Subject<void>();
 

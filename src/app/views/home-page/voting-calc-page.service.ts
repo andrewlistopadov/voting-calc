@@ -7,29 +7,30 @@ import {StorageServiceBase} from 'src/app/core/browser-storage-services/storage-
 import {downloadCSV} from 'src/app/core/download-file';
 import {parseVotingContent} from 'src/app/core/parse-voting-content';
 import {getDefaultColDef, normalizeColumns, NormalizedRow, normalizeRows} from 'src/app/core/table-builder';
-import {ToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
+import {VotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 
-const VOTING_TABLE_CONTENT_STORAGE_KEY = 'VOTING_TABLE_CONTENT_STORAGE_KEY';
+const VOTING_DATA_STORAGE_KEY = 'VOTING_DATA_STORAGE_KEY';
 
-interface StoredVotingTableContent {
-  voteName: string;
-  inspectorName: string;
-  totalSquare: number;
+interface VotingTableData {
   columnDefs: ColDef[];
-  rowData: string[][];
+  rowData: NormalizedRow[];
 }
+
+interface StoredVotingData extends VotingToolbarData, VotingTableData {}
 
 @Injectable({
   providedIn: 'root',
 })
 export class VotingCalcPageService {
-  private _toolbarData: ToolbarData | null = null;
-  public set toolbarData(data: ToolbarData | null) {
-    this._toolbarData = data;
-  }
+  private toolbarData: VotingToolbarData | null = null;
+
   public voteName$: Subject<string | null> = new Subject();
   public inspectorName$: Subject<string | null> = new Subject();
   public totalSquare$: Subject<number | null> = new Subject();
+  public noDataYet$: BehaviorSubject<boolean> = new BehaviorSubject(Boolean(true));
+
+  private tableData: VotingTableData | null = null;
+  private tableRowsMap: Map<string, NormalizedRow> = new Map();
 
   public defaultColDef$: BehaviorSubject<ColDef> = new BehaviorSubject({});
   public columnDefs$: BehaviorSubject<ColDef[]> = new BehaviorSubject([] as ColDef[]);
@@ -45,7 +46,7 @@ export class VotingCalcPageService {
     this.gridColumnApi = params.columnApi;
   }
 
-  public exportVotingCalcDataAsCsv(toolbarData: ToolbarData): void {
+  public exportVotingCalcDataAsCsv(toolbarData: VotingToolbarData): void {
     const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.inspectorName},${toolbarData.totalSquare}`;
 
     const regexLength = this.gridColumnApi.getAllColumns()!.length - 1;
@@ -71,15 +72,10 @@ export class VotingCalcPageService {
     const normalizedColumns = normalizeColumns(columns);
     const normalizedRows = normalizeRows(columns, rows);
 
-    this._toolbarData = {voteName, inspectorName, totalSquare};
-
-    this.voteName$.next(voteName);
-    this.inspectorName$.next(inspectorName);
-    this.totalSquare$.next(totalSquare);
+    this.setToolbarData({voteName, inspectorName, totalSquare});
+    this.setTableData({columnDefs: normalizedColumns, rowData: normalizedRows});
 
     this.defaultColDef$.next(getDefaultColDef());
-    this.columnDefs$.next(normalizedColumns);
-    this.rowData$.next(normalizedRows);
 
     // return {
     //   voteName,
@@ -90,18 +86,34 @@ export class VotingCalcPageService {
     // };
   }
 
+  public fileUploaded(file: File): void {
+    const reader = new FileReader();
+    reader.readAsText(file);
+
+    reader.onload = () => {
+      this.parseVotingTableContent(reader!.result as string);
+      this.noDataYet$.next(false);
+      this.save$.next();
+    };
+
+    reader.onerror = () => {
+      // TODO update to material popup
+      this.noDataYet$.next(true);
+      console.error(reader.error);
+    };
+  }
+
   public restoreVotingTableContentFromStorage(): void {
-    const restoredData = this.sessionStorage.getItem(VOTING_TABLE_CONTENT_STORAGE_KEY) as StoredVotingTableContent;
+    const restoredData = this.sessionStorage.getItem(VOTING_DATA_STORAGE_KEY) as StoredVotingData;
     if (restoredData) {
+      this.noDataYet$.next(false);
+
       const {voteName, totalSquare, inspectorName, columnDefs, rowData} = restoredData;
 
-      this.voteName$.next(voteName);
-      this.inspectorName$.next(inspectorName);
-      this.totalSquare$.next(totalSquare);
+      this.setToolbarData({voteName, inspectorName, totalSquare});
+      this.setTableData({columnDefs, rowData});
 
       this.defaultColDef$.next(getDefaultColDef());
-      this.columnDefs$.next(columnDefs);
-      // this.rowData$.next(rowData);
     }
   }
 
@@ -112,23 +124,42 @@ export class VotingCalcPageService {
   }
 
   private saveDataToStorage(): void {
-    const rowData: string[][] = [];
-    this.gridApi.forEachNode((node: RowNode) => rowData.push(node.data));
+    // const rowData: string[][] = [];
+    // this.gridApi.forEachNode((node: RowNode) => rowData.push(node.data));
 
-    const columnDefs = this.gridColumnApi.getAllColumns()?.map((i) => i.getColDef());
+    // const columnDefs = this.gridColumnApi.getAllColumns()?.map((i) => i.getColDef());
 
-    const dataToBeStored: StoredVotingTableContent = {
-      voteName: this._toolbarData?.voteName || '',
-      inspectorName: this._toolbarData?.inspectorName || '',
-      totalSquare: this._toolbarData?.totalSquare || 0,
-      columnDefs: columnDefs || [],
-      rowData,
+    const dataToBeStored: StoredVotingData = {
+      voteName: this.toolbarData?.voteName || '',
+      inspectorName: this.toolbarData?.inspectorName || '',
+      totalSquare: this.toolbarData?.totalSquare || 0,
+      columnDefs: this.tableData?.columnDefs || [],
+      rowData: this.tableData?.rowData || [],
     };
 
-    this.sessionStorage.setItem(VOTING_TABLE_CONTENT_STORAGE_KEY, dataToBeStored);
+    this.sessionStorage.setItem(VOTING_DATA_STORAGE_KEY, dataToBeStored);
   }
 
-  private votingCalcColumnValues: Map<string, NormalizedRow> = new Map();
+  public toolbarDataChanged(toolbarData: VotingToolbarData): void {
+    this.toolbarData = toolbarData;
+    this.save$.next();
+  }
+
+  private setToolbarData({voteName, inspectorName, totalSquare}: VotingToolbarData): void {
+    this.toolbarData = {voteName, inspectorName, totalSquare};
+
+    this.voteName$.next(voteName);
+    this.inspectorName$.next(inspectorName);
+    this.totalSquare$.next(totalSquare);
+  }
+
+  private setTableData({columnDefs, rowData}: VotingTableData): void {
+    this.tableData = {columnDefs, rowData};
+    this.tableRowsMap = new Map(rowData.map((i) => [i.id, i]));
+
+    this.columnDefs$.next(columnDefs);
+    this.rowData$.next(rowData);
+  }
 
   constructor(@Inject(SessionStorageService) private sessionStorage: StorageServiceBase) {}
 }

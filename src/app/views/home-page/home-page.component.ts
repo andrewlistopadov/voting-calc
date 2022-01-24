@@ -3,7 +3,7 @@ import {CellValueChangedEvent, ColDef, GridReadyEvent} from 'ag-grid-community';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
 import {NormalizedRow} from 'src/app/core/table-builder';
-import {ToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
+import {VotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 import {VotingCalcPageService} from './voting-calc-page.service';
 
 @Component({
@@ -19,48 +19,24 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   public voteName$: Subject<string | null> = this.votingCalcPageService.voteName$;
   public inspectorName$: Subject<string | null> = this.votingCalcPageService.inspectorName$;
   public totalSquare$: Subject<number | null> = this.votingCalcPageService.totalSquare$;
-  public noDataYet$: BehaviorSubject<boolean> = new BehaviorSubject(Boolean(true));
+  public noDataYet$: BehaviorSubject<boolean> = this.votingCalcPageService.noDataYet$;
 
   public defaultColDef$: BehaviorSubject<ColDef> = this.votingCalcPageService.defaultColDef$;
   public columnDefs$: BehaviorSubject<ColDef[]> = this.votingCalcPageService.columnDefs$;
   public rowData$: BehaviorSubject<NormalizedRow[]> = this.votingCalcPageService.rowData$;
 
   public fileUploaded(file: File): void {
-    // this.file = file;
-
-    const reader = new FileReader();
-    reader.readAsText(file);
-
-    reader.onload = () => {
-      // const {
-      //   voteName,
-      //   totalSquare,
-      //   inspectorName,
-      //   normalizedColumns,
-      //   normalizedRows,
-      // } = this.votingCalcPageService.parseVotingTableContent(
-      //   reader!.result as string
-      // );
-      this.noDataYet$.next(false);
-      this.votingCalcPageService.parseVotingTableContent(reader!.result as string);
-    };
-
-    reader.onerror = () => {
-      // TODO update to material popup
-      this.noDataYet$.next(true);
-      console.error(reader.error);
-    };
+    this.votingCalcPageService.fileUploaded(file);
   }
 
-  public export(e: ToolbarData): void {
+  public export(e: VotingToolbarData): void {
     // e.colDef.field - '3'
     // e.data.id - "c86cca40-79e4-11ec-ae45-595e957334c9"
     this.votingCalcPageService.exportVotingCalcDataAsCsv(e);
   }
 
-  public toolbarDataChanged(toolbarData: ToolbarData): void {
-    this.votingCalcPageService.toolbarData = toolbarData;
-    this.votingCalcPageService.save$.next();
+  public toolbarDataChanged(toolbarData: VotingToolbarData): void {
+    this.votingCalcPageService.toolbarDataChanged(toolbarData);
   }
 
   public cellValueChanged(e: CellValueChangedEvent): void {
