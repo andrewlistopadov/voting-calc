@@ -1,5 +1,5 @@
-import { ColDef, RowNode } from 'ag-grid-community';
-import { v4 as uuidv4 } from 'uuid';
+import {ColDef, RowNode} from 'ag-grid-community';
+import {v4 as uuidv4} from 'uuid';
 
 export interface NormalizedRow {
   [key: string]: string;
@@ -16,22 +16,23 @@ export interface INormalizedVotingTableContent {
 const INITIAL_ROWS_LENGTH = 500;
 export const ROWS_TO_BE_ADDED_COUNT = 100;
 
-export function normalizeRows(
-  columns: string[],
-  rows: string[][]
-): NormalizedRow[] {
+export function normalizeRows(columns: string[], rows: string[][]): NormalizedRow[] {
   let normalizedRows: NormalizedRow[] = [];
-  const rowsCount =
-    rows.length < ROWS_TO_BE_ADDED_COUNT
-      ? INITIAL_ROWS_LENGTH
-      : rows.length + ROWS_TO_BE_ADDED_COUNT;
+  const rowsCount = rows.length < ROWS_TO_BE_ADDED_COUNT ? INITIAL_ROWS_LENGTH : rows.length + ROWS_TO_BE_ADDED_COUNT;
   for (let i = 0; i < rowsCount; i++) {
-    const normalizedRow: NormalizedRow = Object.assign(
-      { id: uuidv4() } as NormalizedRow,
-      rows[i] || [...columns].fill('')
-    );
+    const normalizedRow: NormalizedRow = Object.assign({id: uuidv4()} as NormalizedRow, rows[i] || [...columns].fill(''));
     normalizedRows.push(normalizedRow);
   }
+  return normalizedRows;
+}
+
+export function createEmptyRows(rowsCount: number, columnCount: number): NormalizedRow[] {
+  let normalizedRows: NormalizedRow[] = [];
+  for (let i = 0; i < rowsCount; i++) {
+    const normalizedRow: NormalizedRow = Object.assign({id: uuidv4()} as NormalizedRow, Array(columnCount).fill(''));
+    normalizedRows.push(normalizedRow);
+  }
+
   return normalizedRows;
 }
 
@@ -48,13 +49,7 @@ export function normalizeColumns(columns: string[]): ColDef[] {
           field: i.toString(),
           headerName: c,
           type: 'numericColumn',
-          comparator: (
-            a: string,
-            b: string,
-            nodeA: RowNode,
-            nodeB: RowNode,
-            isInverted: boolean
-          ): number => {
+          comparator: (a: string, b: string, nodeA: RowNode, nodeB: RowNode, isInverted: boolean): number => {
             if (a === b) {
               return 0;
             } else if (a === '') {
@@ -69,7 +64,7 @@ export function normalizeColumns(columns: string[]): ColDef[] {
       : {
           field: i.toString(),
           headerName: c,
-        }
+        },
   );
 }
 
@@ -79,13 +74,7 @@ export function getDefaultColDef(): ColDef {
     editable: true,
     flex: 1,
     minWidth: 100,
-    comparator: (
-      a: string,
-      b: string,
-      nodeA: RowNode,
-      nodeB: RowNode,
-      isInverted: boolean
-    ): number => {
+    comparator: (a: string, b: string, nodeA: RowNode, nodeB: RowNode, isInverted: boolean): number => {
       if (a === b) {
         return 0;
       } else if (a === '') {

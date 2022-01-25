@@ -6,7 +6,7 @@ import {SessionStorageService} from 'src/app/core/browser-storage-services/sessi
 import {StorageServiceBase} from 'src/app/core/browser-storage-services/storage-service-base';
 import {downloadCSV} from 'src/app/core/download-file';
 import {parseVotingContent} from 'src/app/core/parse-voting-content';
-import {getDefaultColDef, normalizeColumns, NormalizedRow, normalizeRows} from 'src/app/core/table-builder';
+import {createEmptyRows, getDefaultColDef, normalizeColumns, NormalizedRow, normalizeRows} from 'src/app/core/table-builder';
 import {VotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 
 const VOTING_DATA_STORAGE_KEY = 'VOTING_DATA_STORAGE_KEY';
@@ -44,6 +44,17 @@ export class VotingCalcPageService {
   public setGridApi(params: GridReadyEvent): void {
     this.gridApi = params.api;
     this.gridColumnApi = params.columnApi;
+  }
+
+  public addRows(count: number) {
+    const newEmptyRows: NormalizedRow[] = createEmptyRows(count, this.tableData!.columnDefs.length);
+    // updates stored data
+    this.tableData = {...this.tableData!, rowData: [...this.tableData!.rowData, ...newEmptyRows]};
+    newEmptyRows.forEach((i) => this.tableRowsMap.set(i.id, i));
+    // adds new rows to the table
+    this.gridApi.applyTransaction({add: newEmptyRows});
+
+    this.save$.next();
   }
 
   public exportVotingCalcDataAsCsv(toolbarData: VotingToolbarData): void {

@@ -4,6 +4,7 @@
   [totalSquare]="totalSquare$ | async"
   [noDataYet]="(noDataYet$ | async)!"
   (fileUploaded)="fileUploaded($event)"
+  (addRows)="addRows($event)"
   (export)="export($event)"
   (toolbarDataChanged)="toolbarDataChanged($event)"
 ></voting-calc-toolbar>

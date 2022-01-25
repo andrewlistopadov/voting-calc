@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Subject} from 'rxjs';
 import {debounceTime, takeUntil} from 'rxjs/operators';
+import {ROWS_TO_BE_ADDED_COUNT} from 'src/app/core/table-builder';
 
 export interface VotingToolbarData {
   voteName: string | null;
@@ -22,13 +23,14 @@ export class VotingCalcToolbarComponent implements OnInit {
 
   @Output() fileUploaded: EventEmitter<File> = new EventEmitter<File>();
   @Output() export: EventEmitter<VotingToolbarData> = new EventEmitter<VotingToolbarData>();
-  @Output() add: EventEmitter<void> = new EventEmitter<void>();
+  @Output() addRows: EventEmitter<number> = new EventEmitter<number>();
   // @Output() delete: EventEmitter<void> = new EventEmitter<void>();
   @Output() toolbarDataChanged: EventEmitter<VotingToolbarData> = new EventEmitter<VotingToolbarData>();
 
   private destroy$: Subject<void> = new Subject<void>();
 
   public toolbarDataChanged$: Subject<void> = new Subject();
+  public rowsToBeAddedCount = ROWS_TO_BE_ADDED_COUNT;
 
   constructor() {}
 

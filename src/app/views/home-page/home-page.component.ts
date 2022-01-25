@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {CellValueChangedEvent, ColDef, GridReadyEvent} from 'ag-grid-community';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {NormalizedRow} from 'src/app/core/table-builder';
@@ -26,6 +26,10 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
 
   public fileUploaded(file: File): void {
     this.votingCalcPageService.fileUploaded(file);
+  }
+
+  public addRows(count: number): void {
+    this.votingCalcPageService.addRows(count);
   }
 
   public export(e: VotingToolbarData): void {
