@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 
 @Component({
   selector: 'file-upload',
@@ -24,6 +18,7 @@ export class FileUploadComponent {
     if (file) {
       this.fileName = file.name;
       this.fileSelected.emit(file);
+      (event.target as HTMLInputElement).value = ''; // resets input to handle same file upload events
     }
   }
 }
