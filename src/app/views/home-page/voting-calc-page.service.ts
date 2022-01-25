@@ -1,5 +1,5 @@
 import {Inject, Injectable} from '@angular/core';
-import {ColDef, ColumnApi, GridApi, GridReadyEvent, RowNode} from 'ag-grid-community';
+import {CellValueChangedEvent, ColDef, ColumnApi, GridApi, GridReadyEvent, RowNode} from 'ag-grid-community';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {debounceTime, takeUntil} from 'rxjs/operators';
 import {SessionStorageService} from 'src/app/core/browser-storage-services/session-storage.service';
@@ -65,7 +65,7 @@ export class VotingCalcPageService {
 
   public parseVotingTableContent(content: string): void {
     // ): INormalizedVotingTableContent {
-    const votingContent: string[][] = content.split('\n').map((row) => row.split(',').filter((i) => !!i));
+    const votingContent: string[][] = content.split('\r\n').map((row) => row.split(',').filter((i) => !!i));
 
     const {voteName, totalSquare, inspectorName, columns, rows} = parseVotingContent(votingContent);
 
@@ -142,6 +142,16 @@ export class VotingCalcPageService {
 
   public toolbarDataChanged(toolbarData: VotingToolbarData): void {
     this.toolbarData = toolbarData;
+    this.save$.next();
+  }
+
+  public cellValueChanged(e: CellValueChangedEvent): void {
+    // e.colDef.field - '3'
+    // e.data.id - "c86cca40-79e4-11ec-ae45-595e957334c9"
+    let row = this.tableRowsMap.get(e.data.id);
+    // row = {...e.data};
+    row![e.colDef.field!] = e.value;
+    // console.log(this.tableRowsMap.get(e.data.id));
     this.save$.next();
   }
 

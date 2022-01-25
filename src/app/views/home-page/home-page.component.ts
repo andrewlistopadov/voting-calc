@@ -1,7 +1,6 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CellValueChangedEvent, ColDef, GridReadyEvent} from 'ag-grid-community';
 import {BehaviorSubject, Subject} from 'rxjs';
-import {debounceTime} from 'rxjs/operators';
 import {NormalizedRow} from 'src/app/core/table-builder';
 import {VotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 import {VotingCalcPageService} from './voting-calc-page.service';
@@ -30,8 +29,6 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   }
 
   public export(e: VotingToolbarData): void {
-    // e.colDef.field - '3'
-    // e.data.id - "c86cca40-79e4-11ec-ae45-595e957334c9"
     this.votingCalcPageService.exportVotingCalcDataAsCsv(e);
   }
 
@@ -40,9 +37,7 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   }
 
   public cellValueChanged(e: CellValueChangedEvent): void {
-    // e.colDef.field - '3'
-    // e.data.id - "c86cca40-79e4-11ec-ae45-595e957334c9"
-    console.log(e);
+    this.votingCalcPageService.cellValueChanged(e);
   }
 
   public onGridReady(params: GridReadyEvent): void {

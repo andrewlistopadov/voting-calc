@@ -7,6 +7,10 @@
   align-items: baseline;
 }
 
+.toolbar-item-group + .toolbar-item-group {
+  flex: 1;
+}
+
 .toolbar-item {
   flex-shrink: 0;
 }
