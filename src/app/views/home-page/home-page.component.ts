@@ -1,8 +1,7 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {CellValueChangedEvent, ColDef, GridReadyEvent} from 'ag-grid-community';
 import {BehaviorSubject, Subject} from 'rxjs';
-import {NormalizedRow} from 'src/app/core/table-builder';
-import {VotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
+import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 import {VotingCalcPageService} from './voting-calc-page.service';
 
 @Component({
@@ -22,7 +21,7 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
 
   public defaultColDef$: BehaviorSubject<ColDef> = this.votingCalcPageService.defaultColDef$;
   public columnDefs$: BehaviorSubject<ColDef[]> = this.votingCalcPageService.columnDefs$;
-  public rowData$: BehaviorSubject<NormalizedRow[]> = this.votingCalcPageService.rowData$;
+  public rowData$: BehaviorSubject<string[][]> = this.votingCalcPageService.rowData$;
 
   public fileUploaded(file: File): void {
     this.votingCalcPageService.fileUploaded(file);
@@ -32,11 +31,11 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
     this.votingCalcPageService.addRows(count);
   }
 
-  public export(e: VotingToolbarData): void {
+  public export(e: IVotingToolbarData): void {
     this.votingCalcPageService.exportVotingCalcDataAsCsv(e);
   }
 
-  public toolbarDataChanged(toolbarData: VotingToolbarData): void {
+  public toolbarDataChanged(toolbarData: IVotingToolbarData): void {
     this.votingCalcPageService.toolbarDataChanged(toolbarData);
   }
 
@@ -51,7 +50,7 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   constructor(private votingCalcPageService: VotingCalcPageService) {}
 
   ngAfterViewInit(): void {
-    this.votingCalcPageService.restoreVotingTableContentFromStorage();
+    this.votingCalcPageService.restoreVotingDataFromStorage();
     this.votingCalcPageService.startAutoSaving(this.destroy$);
   }
 

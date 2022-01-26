@@ -3,7 +3,7 @@ import {Subject} from 'rxjs';
 import {debounceTime, takeUntil} from 'rxjs/operators';
 import {ROWS_TO_BE_ADDED_COUNT} from 'src/app/core/table-builder';
 
-export interface VotingToolbarData {
+export interface IVotingToolbarData {
   voteName: string | null;
   inspectorName: string | null;
   totalSquare: number | null;
@@ -22,10 +22,10 @@ export class VotingCalcToolbarComponent implements OnInit {
   @Input() noDataYet: boolean = true;
 
   @Output() fileUploaded: EventEmitter<File> = new EventEmitter<File>();
-  @Output() export: EventEmitter<VotingToolbarData> = new EventEmitter<VotingToolbarData>();
+  @Output() export: EventEmitter<IVotingToolbarData> = new EventEmitter<IVotingToolbarData>();
   @Output() addRows: EventEmitter<number> = new EventEmitter<number>();
   // @Output() delete: EventEmitter<void> = new EventEmitter<void>();
-  @Output() toolbarDataChanged: EventEmitter<VotingToolbarData> = new EventEmitter<VotingToolbarData>();
+  @Output() toolbarDataChanged: EventEmitter<IVotingToolbarData> = new EventEmitter<IVotingToolbarData>();
 
   private destroy$: Subject<void> = new Subject<void>();
 

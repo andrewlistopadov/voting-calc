@@ -1,12 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { NormalizedRow } from 'src/app/core/table-builder';
-import { VotingCalcResultsSheetComponent } from './voting-calc-results-sheet/voting-calc-results-sheet.component';
+import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {MatBottomSheet} from '@angular/material/bottom-sheet';
+import {VotingCalcResultsSheetComponent} from './voting-calc-results-sheet/voting-calc-results-sheet.component';
 
 @Component({
   selector: 'voting-calc-results',
@@ -15,7 +9,7 @@ import { VotingCalcResultsSheetComponent } from './voting-calc-results-sheet/vot
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VotingCalcResultsComponent implements OnInit {
-  @Input() rowData: NormalizedRow[] = [];
+  @Input() rowData: string[][] = [];
 
   public showVotingResults(): void {
     this.bottomSheet.open(VotingCalcResultsSheetComponent);

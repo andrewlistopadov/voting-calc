@@ -13,6 +13,7 @@ export class FileUploadComponent {
   public fileName = '';
 
   public onFileSelected(event: Event): void {
+    // TODO update to multiple files
     const file: File = (event.target as HTMLInputElement).files![0];
 
     if (file) {
