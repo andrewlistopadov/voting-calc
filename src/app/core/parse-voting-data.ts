@@ -6,7 +6,7 @@ export interface IParsedVotingTableContent {
   rows: string[][];
 }
 
-export function parseVotingContent(content: any): IParsedVotingTableContent {
+export function parseVotingData(content: any): IParsedVotingTableContent {
   return {
     voteName: content[0][0],
     inspectorName: content[0][1],

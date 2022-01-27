@@ -5,11 +5,15 @@ import {debounceTime, takeUntil} from 'rxjs/operators';
 import {SessionStorageService} from 'src/app/core/browser-storage-services/session-storage.service';
 import {StorageServiceBase} from 'src/app/core/browser-storage-services/storage-service-base';
 import {downloadCSV} from 'src/app/core/download-file';
-import {parseVotingContent} from 'src/app/core/parse-voting-content';
+import {parseVotingData} from 'src/app/core/parse-voting-data';
 import {createEmptyRows, getColumnDefs, getDefaultColDef, getRowData} from 'src/app/core/table-builder';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 
 const VOTING_DATA_STORAGE_KEY = 'VOTING_DATA_STORAGE_KEY';
+
+// const regexPattern = `(${new Array(regexLength).join(',')}+)|^\s*$(?:\r\n?|\n)`; // ` removes ,,,,,,,, and empty lines
+const blankLinesPattern = /^\s+$/gm; // the only regex that works fine
+const blankLinesRegex = new RegExp(blankLinesPattern);
 
 interface IVotingTableData {
   columnDefs: string[];
@@ -34,9 +38,6 @@ export class VotingCalcPageService {
   public totalSquare$: Subject<number | null> = new Subject();
   public noDataYet$: BehaviorSubject<boolean> = new BehaviorSubject(Boolean(true));
 
-  // private tableData: VotingTableData | null = null;
-  // private tableRowsMap: Map<string, NormalizedRow> = new Map();
-
   public defaultColDef$: BehaviorSubject<ColDef> = new BehaviorSubject({});
   public columnDefs$: BehaviorSubject<ColDef[]> = new BehaviorSubject([] as ColDef[]);
   public rowData$: BehaviorSubject<string[][]> = new BehaviorSubject([] as string[][]);
@@ -53,31 +54,9 @@ export class VotingCalcPageService {
 
   public addRows(count: number) {
     const newEmptyRows: string[][] = createEmptyRows(count, this.gridColumnApi.getAllDisplayedColumns().length);
-    // updates stored data
-    // this.tableData = {...this.tableData!, rowData: [...this.tableData!.rowData, ...newEmptyRows]};
-    // newEmptyRows.forEach((i) => this.tableRowsMap.set(i.id, i));
-    // adds new rows to the table
     this.gridApi.applyTransaction({add: newEmptyRows});
-
     this.save$.next();
   }
-
-  // public exportVotingCalcDataAsCsv(toolbarData: VotingToolbarData): void {
-  //   const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.inspectorName},${toolbarData.totalSquare},`; // `
-
-  //   const regexLength = this.gridColumnApi.getAllColumns()!.length - 1;
-  //   const regexPattern = `(${new Array(regexLength).join(',')}+)|^\s*$(?:\r\n?|\n)`; // ` removes ,,,,,,,, and empty lines
-  //   const regex = new RegExp(regexPattern, 'gm');
-
-  //   const votingCalcDataAsCsv = this.gridApi
-  //     .getDataAsCsv({
-  //       prependContent: toolbarDataAsCsv,
-  //       suppressQuotes: true, // without "" escaping
-  //     })!
-  //     .replace(regex, '');
-
-  //   downloadCSV(votingCalcDataAsCsv!, `${toolbarData.voteName}_${toolbarData.inspectorName}.csv`);
-  // }
 
   public exportVotingCalcDataAsCsv(toolbarData: IVotingToolbarData): void {
     const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.inspectorName},${toolbarData.totalSquare}\r\n`; // `
@@ -88,9 +67,7 @@ export class VotingCalcPageService {
         .map((i) => i.getColDef().headerName)
         .join(',') + '\r\n';
 
-    let rowData: string[][] = [];
-    this.gridApi.forEachNode((node) => rowData.push(node.data));
-
+    const rowData = this.getRowData();
     const notEmptyRowDataAsCsv = rowData
       .filter((row, i) => {
         return row.some((v: string) => Boolean(v));
@@ -99,31 +76,24 @@ export class VotingCalcPageService {
         return (acc += i.join(',') + '\r\n');
       }, '');
 
-    const votingContent = toolbarDataAsCsv + columnDefsAsCsv + notEmptyRowDataAsCsv;
-    downloadCSV(votingContent, `${toolbarData.voteName}_${toolbarData.inspectorName}.csv`);
+    const votingData = toolbarDataAsCsv + columnDefsAsCsv + notEmptyRowDataAsCsv;
+    downloadCSV(votingData, `${toolbarData.voteName}_${toolbarData.inspectorName}.csv`);
 
     this._thereAreUnsavedChanges = false;
   }
 
-  public parseVotingTableContent(content: string): void {
-    // ): INormalizedVotingTableContent {
-    const votingContent: string[][] = content.split('\r\n').map((row) => row.split(',')); //.filter((i) => !!i));
+  public parseVotingData(data: string): void {
+    const fixedData = data.replace(blankLinesRegex, '');
+    const votingData: string[][] = fixedData.split('\r\n').map((row) => row.split(',')); //.filter((i) => !!i));
 
-    const {voteName, totalSquare, inspectorName, columns, rows} = parseVotingContent(votingContent);
+    const {voteName, totalSquare, inspectorName, columns, rows} = parseVotingData(votingData);
 
     const columnDefs = getColumnDefs(columns);
     const rowData = getRowData(columns, rows);
 
     this.setToolbarData({voteName, inspectorName, totalSquare});
     this.setTableData(columnDefs, rowData);
-
-    // return {
-    //   voteName,
-    //   inspectorName,
-    //   totalSquare,
-    //   normalizedColumns,
-    //   normalizedRows,
-    // };
+    // TODO fill the results from scratch
   }
 
   public fileUploaded(file: File): void {
@@ -131,7 +101,7 @@ export class VotingCalcPageService {
     reader.readAsText(file);
 
     reader.onload = () => {
-      this.parseVotingTableContent(reader!.result as string);
+      this.parseVotingData(reader!.result as string);
       this.noDataYet$.next(false);
       this.save$.next();
       this._thereAreUnsavedChanges = false;
@@ -155,6 +125,7 @@ export class VotingCalcPageService {
 
       this.setToolbarData({voteName, inspectorName, totalSquare});
       this.setTableData(columnDefs, rowData);
+      // TODO fill the results from scratch
     }
   }
 
@@ -165,20 +136,12 @@ export class VotingCalcPageService {
   }
 
   private saveVotingDataToStorage(): void {
-    // const rowData: string[][] = [];
-    // this.gridApi.forEachNode((node: RowNode) => rowData.push(node.data));
-
-    // const columnDefs = this.gridColumnApi.getAllColumns()?.map((i) => i.getColDef());
-
-    const rowData: string[][] = [];
-    this.gridApi.forEachNode((node) => rowData.push(node.data));
-
     const dataToBeStored: IVotingData = {
       voteName: this.toolbarData?.voteName || '',
       inspectorName: this.toolbarData?.inspectorName || '',
       totalSquare: this.toolbarData?.totalSquare || 0,
-      columnDefs: this.gridColumnApi.getAllDisplayedColumns()!.map((i) => i.getColDef().headerName!) || [],
-      rowData,
+      columnDefs: this.gridColumnApi.getAllDisplayedColumns()!.map((i) => i.getColDef().headerName!),
+      rowData: this.getRowData(),
     };
 
     this.sessionStorage.setItem(VOTING_DATA_STORAGE_KEY, dataToBeStored);
@@ -191,12 +154,15 @@ export class VotingCalcPageService {
   }
 
   public cellValueChanged(e: CellValueChangedEvent): void {
-    // e.colDef.field - '3'
-    // e.data.id - "c86cca40-79e4-11ec-ae45-595e957334c9"
-    // let row = this.tableRowsMap.get(e.data.id);
-    // row = {...e.data};
-    // row![e.colDef.field!] = e.value;
-    // console.log(this.tableRowsMap.get(e.data.id));
+    // e.column.colId - '3' - column
+    // e.rowIndex - 33 - row
+    // e.value
+
+    // TODO calc results for particular column
+    console.log(e);
+    console.log(this.getRowData());
+    console.log(this.getRowData()[e.rowIndex!]);
+
     this.save$.next();
     this._thereAreUnsavedChanges = true;
   }
@@ -216,6 +182,12 @@ export class VotingCalcPageService {
     this.columnDefs$.next(columnDefs);
     this.rowData$.next(rowData);
     this.defaultColDef$.next(getDefaultColDef());
+  }
+
+  private getRowData(): string[][] {
+    const rowData: string[][] = [];
+    this.gridApi.forEachNode((node) => rowData.push(node.data));
+    return rowData;
   }
 
   constructor(@Inject(SessionStorageService) private sessionStorage: StorageServiceBase) {}
