@@ -1,6 +1,7 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnDestroy} from '@angular/core';
 import {CellValueChangedEvent, ColDef, GridReadyEvent} from 'ag-grid-community';
 import {BehaviorSubject, Subject} from 'rxjs';
+import {WINDOW} from 'src/app/core/window.injection-token';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 import {VotingCalcPageService} from './voting-calc-page.service';
 
@@ -47,14 +48,24 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
     this.votingCalcPageService.setGridApi(params);
   }
 
-  constructor(private votingCalcPageService: VotingCalcPageService) {}
+  private askLeavePermission = (event: BeforeUnloadEvent): string | null => {
+    if (this.votingCalcPageService.thereAreUnsavedChanges) {
+      event.preventDefault();
+      event.returnValue = 'Changes you made may not be saved. Still want to leave?';
+      return event.returnValue;
+    } else return null;
+  };
+
+  constructor(@Inject(WINDOW) private windowReferenceService: Window, private votingCalcPageService: VotingCalcPageService) {}
 
   ngAfterViewInit(): void {
+    this.windowReferenceService.onbeforeunload = this.askLeavePermission;
     this.votingCalcPageService.restoreVotingDataFromStorage();
     this.votingCalcPageService.startAutoSaving(this.destroy$);
   }
 
   ngOnDestroy(): void {
+    this.windowReferenceService.onbeforeunload = null;
     this.destroy$.next();
   }
 }

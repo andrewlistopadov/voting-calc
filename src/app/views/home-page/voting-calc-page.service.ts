@@ -24,6 +24,11 @@ interface IVotingData extends IVotingToolbarData, IVotingTableData {}
 export class VotingCalcPageService {
   private toolbarData: IVotingToolbarData | null = null;
 
+  private _thereAreUnsavedChanges: boolean = false;
+  public get thereAreUnsavedChanges(): boolean {
+    return this._thereAreUnsavedChanges;
+  }
+
   public voteName$: Subject<string | null> = new Subject();
   public inspectorName$: Subject<string | null> = new Subject();
   public totalSquare$: Subject<number | null> = new Subject();
@@ -96,6 +101,8 @@ export class VotingCalcPageService {
 
     const votingContent = toolbarDataAsCsv + columnDefsAsCsv + notEmptyRowDataAsCsv;
     downloadCSV(votingContent, `${toolbarData.voteName}_${toolbarData.inspectorName}.csv`);
+
+    this._thereAreUnsavedChanges = false;
   }
 
   public parseVotingTableContent(content: string): void {
@@ -127,12 +134,14 @@ export class VotingCalcPageService {
       this.parseVotingTableContent(reader!.result as string);
       this.noDataYet$.next(false);
       this.save$.next();
+      this._thereAreUnsavedChanges = false;
     };
 
     reader.onerror = () => {
       // TODO update to material popup
       this.noDataYet$.next(true);
       console.error(reader.error);
+      this._thereAreUnsavedChanges = false;
     };
   }
 
@@ -178,6 +187,7 @@ export class VotingCalcPageService {
   public toolbarDataChanged(toolbarData: IVotingToolbarData): void {
     this.toolbarData = toolbarData;
     this.save$.next();
+    this._thereAreUnsavedChanges = true;
   }
 
   public cellValueChanged(e: CellValueChangedEvent): void {
@@ -188,6 +198,7 @@ export class VotingCalcPageService {
     // row![e.colDef.field!] = e.value;
     // console.log(this.tableRowsMap.get(e.data.id));
     this.save$.next();
+    this._thereAreUnsavedChanges = true;
   }
 
   private setToolbarData({voteName, inspectorName, totalSquare}: IVotingToolbarData): void {
