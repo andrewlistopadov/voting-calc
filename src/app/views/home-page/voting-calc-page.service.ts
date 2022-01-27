@@ -84,7 +84,11 @@ export class VotingCalcPageService {
 
   public parseVotingData(data: string): void {
     const fixedData = data.replace(blankLinesRegex, '');
-    const votingData: string[][] = fixedData.split('\r\n').map((row) => row.split(',')); //.filter((i) => !!i));
+    // const votingData: string[][] = fixedData.split(/$[\r\n]/gm).map((row) => row.split(','));
+    const votingData: string[][] = fixedData
+      .split(/$(?:[\t ]*(?:\r?\n|\r))/gm)
+      .map((row) => row.split(','))
+      .filter((row) => row.every((i) => i));
 
     const {voteName, totalSquare, inspectorName, columns, rows} = parseVotingData(votingData);
 
