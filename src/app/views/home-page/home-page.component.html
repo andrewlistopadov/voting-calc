@@ -16,4 +16,12 @@
   (cellValueChanged)="cellValueChanged($event)"
   (gridReady)="onGridReady($event)"
 ></ag-grid-angular>
-<voting-calc-results [rowData]="(rowData$ | async)!"></voting-calc-results>
+<voting-calc-results
+  [class.hidden]="(noDataYet$ | async)!"
+  class="shown"
+  [votesCount]="(votesCount$ | async)!"
+  [totalSquare]="(totalSquare$ | async)!"
+  [totalVotedSquare]="(totalVotedSquare$ | async)!"
+  [answersWeights]="(answersWeights$ | async)!"
+  [columnNames]="(columnNames$ | async)!"
+></voting-calc-results>

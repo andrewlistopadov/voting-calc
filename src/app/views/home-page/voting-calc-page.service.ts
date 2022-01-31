@@ -1,5 +1,6 @@
 import {Inject, Injectable} from '@angular/core';
 import {CellValueChangedEvent, ColDef, ColumnApi, GridApi, GridReadyEvent} from 'ag-grid-community';
+import {Big} from 'big.js';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {debounceTime, takeUntil} from 'rxjs/operators';
 import {SessionStorageService} from 'src/app/core/browser-storage-services/session-storage.service';
@@ -14,9 +15,11 @@ const VOTING_DATA_STORAGE_KEY = 'VOTING_DATA_STORAGE_KEY';
 // const regexPattern = `(${new Array(regexLength).join(',')}+)|^\s*$(?:\r\n?|\n)`; // ` removes ,,,,,,,, and empty lines
 const blankLinesPattern = /^\s+$/gm; // the only regex that works fine
 const blankLinesRegex = new RegExp(blankLinesPattern);
+const floatPattern = /^\d+\.\d+$/;
+const floatRegex = new RegExp(floatPattern);
 
 interface IVotingTableData {
-  columnDefs: string[];
+  columnNames: string[];
   rowData: string[][];
 }
 
@@ -41,6 +44,12 @@ export class VotingCalcPageService {
   public defaultColDef$: BehaviorSubject<ColDef> = new BehaviorSubject({});
   public columnDefs$: BehaviorSubject<ColDef[]> = new BehaviorSubject([] as ColDef[]);
   public rowData$: BehaviorSubject<string[][]> = new BehaviorSubject([] as string[][]);
+  public votingResults$: BehaviorSubject<string[]> = new BehaviorSubject([] as string[]);
+
+  public votesCount$: Subject<number> = new Subject();
+  public totalVotedSquare$: Subject<Big | null> = new Subject();
+  public answersWeights$: Subject<Map<string, Big>[]> = new Subject();
+  public columnNames$: Subject<string[]> = new Subject();
 
   public save$: Subject<void> = new Subject();
 
@@ -76,6 +85,7 @@ export class VotingCalcPageService {
         return (acc += i.join(',') + '\r\n');
       }, '');
 
+    // TODO alert You have incomplete rows. Ignore and download?
     const votingData = toolbarDataAsCsv + columnDefsAsCsv + notEmptyRowDataAsCsv;
     downloadCSV(votingData, `${toolbarData.voteName}_${toolbarData.inspectorName}.csv`);
 
@@ -90,14 +100,15 @@ export class VotingCalcPageService {
       .map((row) => row.split(','))
       .filter((row) => row.every((i) => i));
 
-    const {voteName, totalSquare, inspectorName, columns, rows} = parseVotingData(votingData);
+    const {voteName, totalSquare, inspectorName, columnNames, rows} = parseVotingData(votingData);
 
-    const columnDefs = getColumnDefs(columns);
-    const rowData = getRowData(columns, rows);
+    const columnDefs = getColumnDefs(columnNames);
+    const rowData = getRowData(columnNames, rows);
 
     this.setToolbarData({voteName, inspectorName, totalSquare});
     this.setTableData(columnDefs, rowData);
-    // TODO fill the results from scratch
+
+    setTimeout(() => this.calculateVotingResults(columnNames, rowData));
   }
 
   public fileUploaded(file: File): void {
@@ -125,11 +136,12 @@ export class VotingCalcPageService {
       this.noDataYet$.next(false);
 
       const {voteName, totalSquare, inspectorName, rowData} = restoredData;
-      const columnDefs = getColumnDefs(restoredData.columnDefs);
+      const columnDefs = getColumnDefs(restoredData.columnNames);
 
       this.setToolbarData({voteName, inspectorName, totalSquare});
       this.setTableData(columnDefs, rowData);
-      // TODO fill the results from scratch
+
+      setTimeout(() => this.calculateVotingResults(restoredData.columnNames, rowData));
     }
   }
 
@@ -144,7 +156,7 @@ export class VotingCalcPageService {
       voteName: this.toolbarData?.voteName || '',
       inspectorName: this.toolbarData?.inspectorName || '',
       totalSquare: this.toolbarData?.totalSquare || 0,
-      columnDefs: this.gridColumnApi.getAllDisplayedColumns()!.map((i) => i.getColDef().headerName!),
+      columnNames: this.gridColumnApi.getAllDisplayedColumns()!.map((i) => i.getColDef().headerName!),
       rowData: this.getRowData(),
     };
 
@@ -159,13 +171,13 @@ export class VotingCalcPageService {
 
   public cellValueChanged(e: CellValueChangedEvent): void {
     // e.column.colId - '3' - column
-    // e.rowIndex - 33 - row
+    // e.node.id - '33' - row
     // e.value
 
     // TODO calc results for particular column
-    console.log(e);
-    console.log(this.getRowData());
-    console.log(this.getRowData()[e.rowIndex!]);
+    // console.log(e);
+    // console.log(this.getRowData());
+    // console.log(this.getRowData()[e.rowIndex!]);
 
     this.save$.next();
     this._thereAreUnsavedChanges = true;
@@ -180,12 +192,53 @@ export class VotingCalcPageService {
   }
 
   private setTableData(columnDefs: ColDef[], rowData: string[][]): void {
-    // this.tableData = {columnDefs, rowData};
-    // this.tableRowsMap = new Map(rowData.map((i) => [i.id, i]));
-
     this.columnDefs$.next(columnDefs);
     this.rowData$.next(rowData);
     this.defaultColDef$.next(getDefaultColDef());
+  }
+
+  private calculateVotingResults(columnNames: string[], rowData: string[][]): void {
+    console.time('calculations');
+
+    let votesCount = 0;
+    let totalVotedSquare = new Big(0);
+    let logs = [];
+
+    // skips first 2 items because we don't need maps for row id and square
+    const answersWeights: (Map<string, Big> | null)[] = Array.from(new Array(columnNames.length)).map((_, i) => (i > 1 ? new Map() : null));
+
+    for (let i = 0; i < rowData.length; i++) {
+      const row = rowData[i];
+      const exists = row[0] && floatRegex.test(row[1]);
+
+      if (exists) {
+        const voteWeight = new Big(row[1]);
+        totalVotedSquare = totalVotedSquare.plus(voteWeight);
+
+        for (let j = 2; j < row.length; j++) {
+          const answerKey = row[j];
+          if (answerKey) {
+            let weightOfKey = answersWeights[j]!.get(answerKey) || new Big(0);
+            answersWeights[j]!.set(answerKey, weightOfKey.plus(voteWeight));
+          }
+        }
+        votesCount++;
+      } else {
+        logs.push({i, row: row.join(',')});
+      }
+    }
+
+    console.timeEnd('calculations');
+
+    this.votesCount$.next(votesCount);
+    this.totalVotedSquare$.next(totalVotedSquare);
+    this.answersWeights$.next(answersWeights.slice(2) as Map<string, Big>[]);
+    this.columnNames$.next(columnNames.slice(2));
+
+    console.log('votesCount', votesCount);
+    console.log('totalVotedSquare', totalVotedSquare.toString());
+    console.log('answersWeights', answersWeights.slice(2));
+    console.log('logs', logs);
   }
 
   private getRowData(): string[][] {

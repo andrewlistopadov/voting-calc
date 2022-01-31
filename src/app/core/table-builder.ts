@@ -1,17 +1,4 @@
-import {ColDef, RowNode} from 'ag-grid-community';
-
-// export interface NormalizedRow {
-//   [key: string]: string;
-// }
-// export type NormalizedRow = string[];
-
-// export interface IVotingContent {
-//   voteName: string;
-//   totalSquare: number;
-//   inspectorName: string;
-//   columns: ColDef[];
-//   rows: string[][];
-// }
+import {ColDef, RowNode, ValueSetterFunc, ValueSetterParams} from 'ag-grid-community';
 
 const INITIAL_ROWS_LENGTH = 50;
 export const ROWS_TO_BE_ADDED_COUNT = 10;
@@ -48,6 +35,12 @@ const collator = new Intl.Collator(['ru', 'en-GB', 'en-US'], {
   sensitivity: 'base',
 });
 
+const valueSetter: ValueSetterFunc = (params: ValueSetterParams): boolean => {
+  const newValue = isNaN(params.newValue) ? '' : params.newValue;
+  params.data[params.colDef.field!] = newValue;
+  return newValue !== params.oldValue;
+};
+
 const comparator = (a: string, b: string, nodeA: RowNode, nodeB: RowNode, isInverted: boolean): number => {
   if (a === b) {
     return 0;
@@ -69,6 +62,7 @@ export function getColumnDefs(columns: string[]): ColDef[] {
           headerName: c,
           type: 'numericColumn',
           comparator,
+          valueSetter,
         }
       : {
           field: i.toString(),

@@ -1,5 +1,6 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnDestroy} from '@angular/core';
 import {CellValueChangedEvent, ColDef, GridReadyEvent} from 'ag-grid-community';
+import Big from 'big.js';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {WINDOW} from 'src/app/core/window.injection-token';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
@@ -13,7 +14,6 @@ import {VotingCalcPageService} from './voting-calc-page.service';
 })
 export class HomePageComponent implements AfterViewInit, OnDestroy {
   public destroy$: Subject<void> = new Subject<void>();
-  // public file: File | null = null;
 
   public voteName$: Subject<string | null> = this.votingCalcPageService.voteName$;
   public inspectorName$: Subject<string | null> = this.votingCalcPageService.inspectorName$;
@@ -23,6 +23,11 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   public defaultColDef$: BehaviorSubject<ColDef> = this.votingCalcPageService.defaultColDef$;
   public columnDefs$: BehaviorSubject<ColDef[]> = this.votingCalcPageService.columnDefs$;
   public rowData$: BehaviorSubject<string[][]> = this.votingCalcPageService.rowData$;
+
+  public votesCount$: Subject<number> = this.votingCalcPageService.votesCount$;
+  public totalVotedSquare$: Subject<Big | null> = this.votingCalcPageService.totalVotedSquare$;
+  public answersWeights$: Subject<Map<string, Big>[]> = this.votingCalcPageService.answersWeights$;
+  public columnNames$: Subject<string[]> = this.votingCalcPageService.columnNames$;
 
   public fileUploaded(file: File): void {
     this.votingCalcPageService.fileUploaded(file);
@@ -59,7 +64,7 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   constructor(@Inject(WINDOW) private windowReferenceService: Window, private votingCalcPageService: VotingCalcPageService) {}
 
   ngAfterViewInit(): void {
-    console.warn('uncomment');
+    console.warn('uncomment below');
     // this.windowReferenceService.onbeforeunload = this.askLeavePermission;
     this.votingCalcPageService.restoreVotingDataFromStorage();
     this.votingCalcPageService.startAutoSaving(this.destroy$);
