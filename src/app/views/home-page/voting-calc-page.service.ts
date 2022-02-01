@@ -15,7 +15,7 @@ const VOTING_DATA_STORAGE_KEY = 'VOTING_DATA_STORAGE_KEY';
 // const regexPattern = `(${new Array(regexLength).join(',')}+)|^\s*$(?:\r\n?|\n)`; // ` removes ,,,,,,,, and empty lines
 const blankLinesPattern = /^\s+$/gm; // the only regex that works fine
 const blankLinesRegex = new RegExp(blankLinesPattern);
-const floatPattern = /^\d+\.\d+$/;
+const floatPattern = /^[0-9]*\.?[0-9]+$/;
 const floatRegex = new RegExp(floatPattern);
 
 interface IVotingTableData {

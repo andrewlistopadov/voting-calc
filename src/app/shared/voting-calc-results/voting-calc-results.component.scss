@@ -6,3 +6,14 @@
   align-items: baseline;
   flex-wrap: nowrap;
 }
+
+.concise-results {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis; */
+}
