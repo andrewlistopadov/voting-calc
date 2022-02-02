@@ -27,8 +27,17 @@ mat-card {
   align-items: flex-end;
 }
 
-.summary__square {
+.votes-value,
+.square-value {
+  color: $primary;
+}
+
+.square-icon {
   margin-left: 10px;
+}
+
+.max {
+  font-weight: 600;
 }
 
 /* .col-res {

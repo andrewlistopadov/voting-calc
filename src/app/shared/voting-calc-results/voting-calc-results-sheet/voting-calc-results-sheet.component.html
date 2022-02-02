@@ -3,12 +3,10 @@
     <mat-card-title-group>
       <mat-card-title>{{ colName }}</mat-card-title>
     </mat-card-title-group>
-    <mat-card-content>
-      <div [innerHTML]="colResults[i]"></div>
-    </mat-card-content>
+    <mat-card-content [innerHTML]="colResults[i]"> </mat-card-content>
   </mat-card>
 </div>
 <div class="summary">
-  <mat-icon>how_to_vote</mat-icon><span>{{ votesFraction }}%({{ votesCount }})</span><mat-icon class="summary__square">square_foot</mat-icon
-  ><span>{{ totalVotedSquare }}({{ totalSquare }})&#13217;</span>
+  <mat-icon>how_to_vote</mat-icon><span class="votes-value">{{ votesFraction }}%({{ votesCount }})</span
+  ><mat-icon class="square-icon">square_foot</mat-icon><span class="square-value">{{ totalVotedSquare }}({{ totalSquare }})&#13217;</span>
 </div>

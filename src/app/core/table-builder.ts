@@ -1,7 +1,7 @@
 import {ColDef, RowNode, ValueSetterFunc, ValueSetterParams} from 'ag-grid-community';
 
-const INITIAL_ROWS_LENGTH = 50;
-export const ROWS_TO_BE_ADDED_COUNT = 10;
+const INITIAL_ROWS_LENGTH = 500;
+export const ROWS_TO_BE_ADDED_COUNT = 100;
 
 export function getRowData(columns: string[], rows: string[][]): string[][] {
   let preparedRows: string[][] = [];
