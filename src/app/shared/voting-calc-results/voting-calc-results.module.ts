@@ -7,7 +7,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {VotingCalcResultsComponent} from './voting-calc-results.component';
 import {VotingCalcResultsSheetComponent} from './voting-calc-results-sheet/voting-calc-results-sheet.component';
 import {SquarePipe} from './pipes/square.pipe';
-import {CalcColSingleResultPipe} from './pipes/calc-col-result.pipe';
+import {CalcColSingleResultPipe} from './pipes/calc-col-single-result.pipe';
 
 @NgModule({
   declarations: [VotingCalcResultsComponent, VotingCalcResultsSheetComponent, SquarePipe, CalcColSingleResultPipe],
