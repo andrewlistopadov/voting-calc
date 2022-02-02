@@ -1,6 +1,6 @@
 import {Pipe, PipeTransform} from '@angular/core';
 import Big from 'big.js';
-import {CALC_PRECISION} from 'src/app/core/global-constants';
+import {CALC_PRECISION_FOR_NUMBERS, CALC_PRECISION_FOR_PERCENTS} from 'src/app/core/global-constants';
 
 @Pipe({name: 'calcColSingleResult'})
 export class CalcColSingleResultPipe implements PipeTransform {
@@ -12,8 +12,8 @@ export class CalcColSingleResultPipe implements PipeTransform {
       max = e[1]!.gt(max[1]) ? e : max;
     });
     if (max[1].gt(Big(0))) {
-      const result = `${colName}:\xa0${max[0]}\xa0-\xa0${max[1].mul(100).div(total).round(CALC_PRECISION)}%(${max[1].round(
-        CALC_PRECISION,
+      const result = `${colName}:\xa0${max[0]}\xa0-\xa0${max[1].mul(100).div(total).round(CALC_PRECISION_FOR_PERCENTS)}%(${max[1].round(
+        CALC_PRECISION_FOR_NUMBERS,
       )}\u33A1)`;
       return result;
     }

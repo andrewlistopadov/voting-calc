@@ -1,1 +1,2 @@
-export const CALC_PRECISION = 5;
+export const CALC_PRECISION_FOR_NUMBERS = 5;
+export const CALC_PRECISION_FOR_PERCENTS = 2;

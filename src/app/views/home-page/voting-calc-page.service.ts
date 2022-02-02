@@ -6,6 +6,7 @@ import {debounceTime, takeUntil} from 'rxjs/operators';
 import {SessionStorageService} from 'src/app/core/browser-storage-services/session-storage.service';
 import {StorageServiceBase} from 'src/app/core/browser-storage-services/storage-service-base';
 import {downloadCSV} from 'src/app/core/download-file';
+import {getVotingResultsCalculator, VotingResults} from 'src/app/core/get-voting-results-calculator';
 import {parseVotingData} from 'src/app/core/parse-voting-data';
 import {createEmptyRows, getColumnDefs, getDefaultColDef, getRowData} from 'src/app/core/table-builder';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
@@ -15,8 +16,8 @@ const VOTING_DATA_STORAGE_KEY = 'VOTING_DATA_STORAGE_KEY';
 // const regexPattern = `(${new Array(regexLength).join(',')}+)|^\s*$(?:\r\n?|\n)`; // ` removes ,,,,,,,, and empty lines
 const blankLinesPattern = /^\s+$/gm; // the only regex that works fine
 const blankLinesRegex = new RegExp(blankLinesPattern);
-const floatPattern = /^[0-9]*\.?[0-9]+$/;
-const floatRegex = new RegExp(floatPattern);
+const numberPattern = /^[0-9]*\.?[0-9]+$/;
+const numberRegex = new RegExp(numberPattern);
 
 interface IVotingTableData {
   columnNames: string[];
@@ -50,6 +51,8 @@ export class VotingCalcPageService {
   public totalVotedSquare$: Subject<Big | null> = new Subject();
   public answersWeights$: Subject<Map<string, Big>[]> = new Subject();
   public columnNames$: Subject<string[]> = new Subject();
+
+  private votingResultsCalculator: Map<string, (e: CellValueChangedEvent) => VotingResults> | null = null;
 
   public save$: Subject<void> = new Subject();
 
@@ -170,14 +173,10 @@ export class VotingCalcPageService {
   }
 
   public cellValueChanged(e: CellValueChangedEvent): void {
-    // e.column.colId - '3' - column
-    // e.node.id - '33' - row
-    // e.value
-
-    // TODO calc results for particular column
-    // console.log(e);
-    // console.log(this.getRowData());
-    // console.log(this.getRowData()[e.rowIndex!]);
+    const {votesCount, totalVotedSquare, answersWeights}: VotingResults = this.votingResultsCalculator!.get(e.colDef.field!)!(e);
+    votesCount && this.votesCount$.next(votesCount);
+    totalVotedSquare && this.totalVotedSquare$.next(totalVotedSquare);
+    answersWeights && this.answersWeights$.next(answersWeights);
 
     this.save$.next();
     this._thereAreUnsavedChanges = true;
@@ -209,36 +208,46 @@ export class VotingCalcPageService {
 
     for (let i = 0; i < rowData.length; i++) {
       const row = rowData[i];
-      const exists = row[0] && floatRegex.test(row[1]);
+      let checksum = 0;
 
-      if (exists) {
+      row[0] && ++votesCount && ++checksum;
+      const weightExists = numberRegex.test(row[1]);
+
+      if (weightExists) {
+        checksum++;
+
         const voteWeight = new Big(row[1]);
         totalVotedSquare = totalVotedSquare.plus(voteWeight);
 
         for (let j = 2; j < row.length; j++) {
           const answerKey = row[j];
           if (answerKey) {
+            checksum++;
+
             let weightOfKey = answersWeights[j]!.get(answerKey) || new Big(0);
             answersWeights[j]!.set(answerKey, weightOfKey.plus(voteWeight));
           }
         }
-        votesCount++;
-      } else {
-        logs.push({i, row: row.join(',')});
       }
+      checksum !== row.length && logs.push({i, row: row.join(',')});
     }
 
     console.timeEnd('calculations');
 
+    const fixedAnswersWeights = answersWeights.slice(2) as Map<string, Big>[];
+    const fixedColumnNames = columnNames.slice(2);
+
+    this.votingResultsCalculator = getVotingResultsCalculator(votesCount, totalVotedSquare, fixedAnswersWeights, columnNames.length);
+
     this.votesCount$.next(votesCount);
     this.totalVotedSquare$.next(totalVotedSquare);
-    this.answersWeights$.next(answersWeights.slice(2) as Map<string, Big>[]);
-    this.columnNames$.next(columnNames.slice(2));
+    this.answersWeights$.next(fixedAnswersWeights);
+    this.columnNames$.next(fixedColumnNames);
 
-    console.log('votesCount', votesCount);
-    console.log('totalVotedSquare', totalVotedSquare.toString());
-    console.log('answersWeights', answersWeights.slice(2));
-    console.log('logs', logs);
+    // console.log('votesCount', votesCount);
+    // console.log('totalVotedSquare', totalVotedSquare.toString());
+    // console.log('answersWeights', fixedAnswersWeights);
+    console.log('Calculate voting results logs:', logs);
   }
 
   private getRowData(): string[][] {
