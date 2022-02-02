@@ -1,12 +1,14 @@
-<p>votesCount: {{ votesCount }}</p>
-<p>totalSquare: {{ totalSquare }}</p>
-<p>totalVotedSquare: {{ totalVotedSquare }}</p>
-<p>answersWeights: {{ answersWeights }}</p>
-<p>columnNames: {{ columnNames }}</p>
-<p>voting-calc-results-sheet works!</p>
-<p>voting-calc-results-sheet works!</p>
-<p>
-  voting-calc-results-sheet works!voting-calc-results-sheet works!voting-calc-results-sheet works!voting-calc-results-sheet
-  works!voting-calc-results-sheet works!voting-calc-results-sheet works!voting-calc-results-sheet works!voting-calc-results-sheet
-  works!voting-calc-results-sheet works!
-</p>
+<div class="result-cards">
+  <mat-card *ngFor="let colName of columnNames; trackBy: trackByIndex; let i = index">
+    <mat-card-title-group>
+      <mat-card-title>{{ colName }}</mat-card-title>
+    </mat-card-title-group>
+    <mat-card-content>
+      <div [innerHTML]="colResults[i]"></div>
+    </mat-card-content>
+  </mat-card>
+</div>
+<div class="summary">
+  <mat-icon>how_to_vote</mat-icon><span>{{ votesFraction }}%({{ votesCount }})</span><mat-icon class="summary__square">square_foot</mat-icon
+  ><span>{{ totalVotedSquare }}({{ totalSquare }})&#13217;</span>
+</div>

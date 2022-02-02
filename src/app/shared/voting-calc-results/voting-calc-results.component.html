@@ -1,7 +1,7 @@
 <button mat-button color="basic" (click)="showVotingResults()">
   <mat-icon>expand_less</mat-icon>
 </button>
-<p class="concise-results">
+<span class="concise-results">
   {{ votesCount }} votes&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;{{ totalVotedSquare | square: totalSquare }}&nbsp;&nbsp;|&nbsp;&nbsp;
   <ng-container *ngFor="let col of columnNames; trackBy: trackByName; let i = index"
     >{{ answersWeights[i] | calcColSingleResult: col }}&nbsp;&nbsp;|&nbsp;&nbsp;
@@ -14,4 +14,4 @@
   <span class="concise-results__item" *ngFor="let col of columnNames; trackBy: trackByName; let i = index"
     >{{ answersWeights[i] | calcColSingleResult: col }}
   </span> -->
-</p>
+</span>

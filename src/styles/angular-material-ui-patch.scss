@@ -1,3 +1,5 @@
+@import './color-variables.scss';
+
 button.mat-button {
   min-width: auto;
 }
@@ -8,7 +10,13 @@ button.mat-button {
 }
 
 .mat-bottom-sheet-container {
-  /* max-width: calc(100vw - 40px) !important; */
-  max-width: 100vw !important;
-  background-color: #f8f8f8;
+  overflow: hidden;
+  max-width: calc(100vw - 40px) !important;
+  /* max-width: 100vw !important; */
+  /* background-color: $gray; */
+  padding: 20px !important;
+}
+
+.mat-card-title {
+  font-size: 16px;
 }

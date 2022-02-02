@@ -1,0 +1,36 @@
+@import '../../../../styles/color-variables.scss';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.result-cards {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+  padding: 10px 10px 0 10px;
+}
+
+mat-card {
+  margin: 0 15px 15px 0;
+  width: 200px;
+}
+
+.summary {
+  padding: 15px 0;
+  border-top: 1px solid $gray-border;
+  font-size: 16px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.summary__square {
+  margin-left: 10px;
+}
+
+/* .col-res {
+  white-space: pre-line;
+} */

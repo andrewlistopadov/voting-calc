@@ -1,10 +1,17 @@
+@import './../../../styles/color-variables.scss';
+
 :host {
-  background-color: #f8f8f8;
+  /* background-color: $gray; */
   border-radius: 4px 4px 0 0;
+  border: 1px solid $gray-border;
   display: flex;
   flex: 1 0;
-  align-items: baseline;
+  align-items: flex-start;
   flex-wrap: nowrap;
+}
+
+button {
+  padding: 0 10px;
 }
 
 .concise-results {
@@ -14,7 +21,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.5;
-  margin: 0;
+  margin: 10px 15px 20px 10px;
   /* overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis; */
