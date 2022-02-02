@@ -11,13 +11,15 @@ export class CalcColSingleResultPipe implements PipeTransform {
       total = total.plus(e[1]);
       max = e[1]!.gt(max[1]) ? e : max;
     });
+    let result;
     if (max[1].gt(Big(0))) {
-      const result = `${colName}:\xa0${max[0]}\xa0-\xa0${max[1].mul(100).div(total).round(CALC_PRECISION_FOR_PERCENTS)}%(${max[1].round(
+      result = `${colName}:\xa0${max[0]}\xa0-\xa0${max[1].mul(100).div(total).round(CALC_PRECISION_FOR_PERCENTS)}%(${max[1].round(
         CALC_PRECISION_FOR_NUMBERS,
       )}\u33A1)`;
-      return result;
+    } else {
+      result = `${colName}:\xa0-\xa0`;
     }
 
-    return '-';
+    return result;
   }
 }
