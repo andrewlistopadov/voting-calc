@@ -29,8 +29,8 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   public answersWeights$: Subject<Map<string, Big>[]> = this.votingCalcPageService.answersWeights$;
   public columnNames$: Subject<string[]> = this.votingCalcPageService.columnNames$;
 
-  public fileUploaded(file: File): void {
-    this.votingCalcPageService.fileUploaded(file);
+  public filesUploaded(files: File[]): void {
+    this.votingCalcPageService.filesUploaded(files);
   }
 
   public addRows(count: number): void {

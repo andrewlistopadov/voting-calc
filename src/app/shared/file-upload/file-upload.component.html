@@ -1,9 +1,9 @@
-<input type="file" class="file-input" [accept]="requiredFileType" (change)="onFileSelected($event)" #fileUpload />
+<input type="file" multiple="multiple" class="file-input" [accept]="requiredFileType" (change)="onFilesSelected($event)" #fileUpload />
 
 <div class="file-upload">
   <button mat-button color="primary" class="upload-btn" (click)="fileUpload.click()">
     <mat-icon>attach_file</mat-icon>
   </button>
 
-  <span class="file-name" [title]="fileName">{{ fileName || 'No files uploaded yet.' }}</span>
+  <span class="file-name" [title]="fileNames">{{ fileNames || 'No files uploaded yet.' }}</span>
 </div>

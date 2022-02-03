@@ -8,17 +8,20 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChi
 })
 export class FileUploadComponent {
   @Input() requiredFileType: string = '';
-  @Output() fileSelected: EventEmitter<File> = new EventEmitter<File>();
+  @Output() filesSelected: EventEmitter<File[]> = new EventEmitter<File[]>();
 
-  public fileName = '';
+  public fileNames: string = '';
 
-  public onFileSelected(event: Event): void {
+  public onFilesSelected(event: Event): void {
     // TODO update to multiple files
-    const file: File = (event.target as HTMLInputElement).files![0];
+    const files: File[] = Array.from((event.target as HTMLInputElement).files!);
 
-    if (file) {
-      this.fileName = file.name;
-      this.fileSelected.emit(file);
+    if (files.length) {
+      this.fileNames = files.reduce((acc, f) => {
+        acc += f.name + '; ';
+        return acc;
+      }, '');
+      this.filesSelected.emit(files);
       (event.target as HTMLInputElement).value = ''; // resets input to handle same file upload events
     }
   }

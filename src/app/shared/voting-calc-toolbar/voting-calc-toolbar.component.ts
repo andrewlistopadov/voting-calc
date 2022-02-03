@@ -21,7 +21,7 @@ export class VotingCalcToolbarComponent implements OnInit {
   @Input() totalSquare: number | null = null;
   @Input() noDataYet: boolean = true;
 
-  @Output() fileUploaded: EventEmitter<File> = new EventEmitter<File>();
+  @Output() filesUploaded: EventEmitter<File[]> = new EventEmitter<File[]>();
   @Output() export: EventEmitter<IVotingToolbarData> = new EventEmitter<IVotingToolbarData>();
   @Output() addRows: EventEmitter<number> = new EventEmitter<number>();
   // @Output() delete: EventEmitter<void> = new EventEmitter<void>();

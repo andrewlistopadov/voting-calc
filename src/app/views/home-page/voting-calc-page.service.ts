@@ -114,9 +114,9 @@ export class VotingCalcPageService {
     setTimeout(() => this.calculateVotingResults(columnNames, rowData));
   }
 
-  public fileUploaded(file: File): void {
+  public filesUploaded(files: File[]): void {
     const reader = new FileReader();
-    reader.readAsText(file);
+    reader.readAsText(files[0]);
 
     reader.onload = () => {
       this.parseVotingData(reader!.result as string);
