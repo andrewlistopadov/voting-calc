@@ -11,7 +11,7 @@ import {VotingCalcResultsSheetComponent} from './voting-calc-results-sheet/votin
 })
 export class VotingCalcResultsComponent implements OnInit {
   @Input() votesCount: number = 0;
-  @Input() totalSquare: number = 0;
+  @Input() totalSquare: string = '';
   @Input() totalVotedSquare: Big | null = null;
   @Input() answersWeights: Map<string, Big>[] = [];
   @Input() columnNames: string[] = [];

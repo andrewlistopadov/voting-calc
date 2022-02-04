@@ -1,23 +1,19 @@
 import {Inject, Injectable} from '@angular/core';
 import {CellValueChangedEvent, ColDef, ColumnApi, GridApi, GridReadyEvent} from 'ag-grid-community';
 import {Big} from 'big.js';
-import {BehaviorSubject, Subject} from 'rxjs';
-import {debounceTime, takeUntil} from 'rxjs/operators';
+import {BehaviorSubject, from, of, Subject} from 'rxjs';
+import {bufferCount, catchError, debounceTime, delay, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {SessionStorageService} from 'src/app/core/browser-storage-services/session-storage.service';
 import {StorageServiceBase} from 'src/app/core/browser-storage-services/storage-service-base';
 import {downloadCSV} from 'src/app/core/download-file';
 import {getVotingResultsCalculator, VotingResults} from 'src/app/core/get-voting-results-calculator';
-import {parseVotingData} from 'src/app/core/parse-voting-data';
-import {createEmptyRows, getColumnDefs, getDefaultColDef, getRowData} from 'src/app/core/table-builder';
+import {IParsedVotingData, parseVotingData} from 'src/app/core/parse-voting-data';
+import {readFileAsText} from 'src/app/core/read-file';
+import {numberRegex} from 'src/app/core/regex';
+import {createEmptyRows, getColumnDefs, getDefaultColDef, getAppendedRows as getAppendedRowData} from 'src/app/core/table-builder';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 
 const VOTING_DATA_STORAGE_KEY = 'VOTING_DATA_STORAGE_KEY';
-
-// const regexPattern = `(${new Array(regexLength).join(',')}+)|^\s*$(?:\r\n?|\n)`; // ` removes ,,,,,,,, and empty lines
-const blankLinesPattern = /^\s+$/gm; // the only regex that works fine
-const blankLinesRegex = new RegExp(blankLinesPattern);
-const numberPattern = /^[0-9]*\.?[0-9]+$/;
-const numberRegex = new RegExp(numberPattern);
 
 interface IVotingTableData {
   columnNames: string[];
@@ -30,6 +26,8 @@ interface IVotingData extends IVotingToolbarData, IVotingTableData {}
   providedIn: 'root',
 })
 export class VotingCalcPageService {
+  private destroy$: Subject<void> = new Subject<void>();
+
   private toolbarData: IVotingToolbarData | null = null;
 
   private _thereAreUnsavedChanges: boolean = false;
@@ -39,7 +37,7 @@ export class VotingCalcPageService {
 
   public voteName$: Subject<string | null> = new Subject();
   public inspectorName$: Subject<string | null> = new Subject();
-  public totalSquare$: Subject<number | null> = new Subject();
+  public totalSquare$: Subject<string | null> = new Subject();
   public noDataYet$: BehaviorSubject<boolean> = new BehaviorSubject(Boolean(true));
 
   public defaultColDef$: BehaviorSubject<ColDef> = new BehaviorSubject({});
@@ -79,7 +77,7 @@ export class VotingCalcPageService {
         .map((i) => i.getColDef().headerName)
         .join(',') + '\r\n';
 
-    const rowData = this.getRowData();
+    const rowData = this.getRowDataFromGrid();
     const notEmptyRowDataAsCsv = rowData
       .filter((row, i) => {
         return row.some((v: string) => Boolean(v));
@@ -88,25 +86,14 @@ export class VotingCalcPageService {
         return (acc += i.join(',') + '\r\n');
       }, '');
 
-    // TODO alert You have incomplete rows. Ignore and download?
     const votingData = toolbarDataAsCsv + columnDefsAsCsv + notEmptyRowDataAsCsv;
     downloadCSV(votingData, `${toolbarData.voteName}_${toolbarData.inspectorName}.csv`);
 
     this._thereAreUnsavedChanges = false;
   }
 
-  public parseVotingData(data: string): void {
-    const fixedData = data.replace(blankLinesRegex, '');
-    // const votingData: string[][] = fixedData.split(/$[\r\n]/gm).map((row) => row.split(','));
-    const votingData: string[][] = fixedData
-      .split(/$(?:[\t ]*(?:\r?\n|\r))/gm)
-      .map((row) => row.split(','))
-      .filter((row) => row.every((i) => i));
-
-    const {voteName, totalSquare, inspectorName, columnNames, rows} = parseVotingData(votingData);
-
+  private setVotingData({voteName, totalSquare, inspectorName, columnNames, rowData}: IVotingData): void {
     const columnDefs = getColumnDefs(columnNames);
-    const rowData = getRowData(columnNames, rows);
 
     this.setToolbarData({voteName, inspectorName, totalSquare});
     this.setTableData(columnDefs, rowData);
@@ -115,41 +102,80 @@ export class VotingCalcPageService {
   }
 
   public filesUploaded(files: File[]): void {
-    const reader = new FileReader();
-    reader.readAsText(files[0]);
+    from(files)
+      .pipe(
+        mergeMap((file: File) => readFileAsText(file)),
+        delay(0),
+        map((dataAsText: string) => parseVotingData(dataAsText)),
+        catchError((e) => of(null)),
+        bufferCount(files.length),
+        tap((parsedFilesData: (IParsedVotingData | null)[]) => {
+          const properlyParsedFilesData = parsedFilesData.filter((i) => Boolean(i));
+          if (properlyParsedFilesData.length === parsedFilesData.length) {
+            const main = properlyParsedFilesData[0];
+            const mainIsValid = main!.totalSquare && main!.voteName && main!.columnNames?.length > 0 && !isNaN(main!.totalSquare as any);
+            if (!mainIsValid) {
+              this.handleUploadFilesError(`${files[0].name.slice(0, 127)} has incorrect file structure`);
+              return;
+            }
 
-    reader.onload = () => {
-      this.parseVotingData(reader!.result as string);
-      this.noDataYet$.next(false);
-      this.save$.next();
-      this._thereAreUnsavedChanges = false;
-    };
+            let rowData: string[][] = [];
+            // multiple files
+            if (properlyParsedFilesData.length > 1) {
+              const allRows = [...main!.rows];
+              for (let i = 1; i < properlyParsedFilesData.length; i++) {
+                const current = properlyParsedFilesData[i];
+                const valid =
+                  main!.totalSquare.localeCompare(current!.totalSquare) === 0 &&
+                  main!.voteName.localeCompare(current!.voteName) === 0 &&
+                  main!.columnNames.every((c, i) => c.localeCompare(current!.columnNames[i]) === 0);
+                if (valid) {
+                  allRows.push(...current!.rows);
+                  main!.inspectorName += ', ' + current!.inspectorName;
+                } else {
+                  this.handleUploadFilesError(`${files[i].name.slice(0, 127)} has incorrect file structure`);
+                  return;
+                }
+              }
+              rowData = getAppendedRowData(main!.columnNames, allRows);
+            } else {
+              // single file
+              rowData = getAppendedRowData(main!.columnNames, main!.rows);
+            }
+            this.setVotingData({...main!, rowData});
 
-    reader.onerror = () => {
-      // TODO update to material popup
-      this.noDataYet$.next(true);
-      console.error(reader.error);
-      this._thereAreUnsavedChanges = false;
-    };
+            this.noDataYet$.next(false);
+            this._thereAreUnsavedChanges = false;
+            this.save$.next();
+          } else {
+            this.handleUploadFilesError('There is incorrect file structure');
+            return;
+          }
+        }),
+        take(1),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {});
+  }
+
+  private handleUploadFilesError(msg: string): void {
+    this.noDataYet$.next(true);
+    this._thereAreUnsavedChanges = false;
+    // todo add dialog
+    console.error(msg);
   }
 
   public restoreVotingDataFromStorage(): void {
     const restoredData = this.sessionStorage.getItem(VOTING_DATA_STORAGE_KEY) as IVotingData;
     if (restoredData) {
       this.noDataYet$.next(false);
-
-      const {voteName, totalSquare, inspectorName, rowData} = restoredData;
-      const columnDefs = getColumnDefs(restoredData.columnNames);
-
-      this.setToolbarData({voteName, inspectorName, totalSquare});
-      this.setTableData(columnDefs, rowData);
-
-      setTimeout(() => this.calculateVotingResults(restoredData.columnNames, rowData));
+      this.setVotingData(restoredData);
     }
   }
 
-  public startAutoSaving(onDestroy: Subject<void>): void {
-    this.save$.pipe(debounceTime(2000), takeUntil(onDestroy)).subscribe(() => {
+  public startAutoSaving(destroy$: Subject<void>): void {
+    this.destroy$ = destroy$;
+    this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe(() => {
       this.saveVotingDataToStorage();
     });
   }
@@ -158,9 +184,9 @@ export class VotingCalcPageService {
     const dataToBeStored: IVotingData = {
       voteName: this.toolbarData?.voteName || '',
       inspectorName: this.toolbarData?.inspectorName || '',
-      totalSquare: this.toolbarData?.totalSquare || 0,
+      totalSquare: this.toolbarData?.totalSquare || '',
       columnNames: this.gridColumnApi.getAllDisplayedColumns()!.map((i) => i.getColDef().headerName!),
-      rowData: this.getRowData(),
+      rowData: this.getRowDataFromGrid(),
     };
 
     this.sessionStorage.setItem(VOTING_DATA_STORAGE_KEY, dataToBeStored);
@@ -201,7 +227,7 @@ export class VotingCalcPageService {
 
     let votesCount = 0;
     let totalVotedSquare = new Big(0);
-    let logs = [];
+    let incompleteRows = [];
 
     // skips first 2 items because we don't need maps for row id and square
     const answersWeights: (Map<string, Big> | null)[] = Array.from(new Array(columnNames.length)).map((_, i) => (i > 1 ? new Map() : null));
@@ -229,7 +255,7 @@ export class VotingCalcPageService {
           }
         }
       }
-      checksum !== row.length && logs.push({i, row: row.join(',')});
+      checksum > 0 && checksum !== row.length && incompleteRows.push({i, row: row.join(',')});
     }
 
     console.timeEnd('calculations');
@@ -244,13 +270,10 @@ export class VotingCalcPageService {
     this.answersWeights$.next(fixedAnswersWeights);
     this.columnNames$.next(fixedColumnNames);
 
-    // console.log('votesCount', votesCount);
-    // console.log('totalVotedSquare', totalVotedSquare.toString());
-    // console.log('answersWeights', fixedAnswersWeights);
-    console.log('Calculate voting results logs:', logs);
+    console.log('Incomplete rows:', incompleteRows);
   }
 
-  private getRowData(): string[][] {
+  private getRowDataFromGrid(): string[][] {
     const rowData: string[][] = [];
     this.gridApi.forEachNode((node) => rowData.push(node.data));
     return rowData;

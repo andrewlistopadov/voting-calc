@@ -6,7 +6,7 @@ import {ROWS_TO_BE_ADDED_COUNT} from 'src/app/core/table-builder';
 export interface IVotingToolbarData {
   voteName: string | null;
   inspectorName: string | null;
-  totalSquare: number | null;
+  totalSquare: string | null;
 }
 
 @Component({
@@ -18,7 +18,7 @@ export interface IVotingToolbarData {
 export class VotingCalcToolbarComponent implements OnInit {
   @Input() voteName: string | null = null;
   @Input() inspectorName: string | null = null;
-  @Input() totalSquare: number | null = null;
+  @Input() totalSquare: string | null = null;
   @Input() noDataYet: boolean = true;
 
   @Output() filesUploaded: EventEmitter<File[]> = new EventEmitter<File[]>();

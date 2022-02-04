@@ -14,7 +14,7 @@ export class VotingCalcResultsSheetComponent implements OnInit {
   public summary: string = '';
   public votesFraction: string = '';
   public totalVotedSquare: string = '';
-  public totalSquare: number = 0;
+  public totalSquare: string = '';
   public votesCount: number = 0;
   public columnNames: string[] = [];
   public colResults: string[] = [];
@@ -56,7 +56,7 @@ export class VotingCalcResultsSheetComponent implements OnInit {
     @Inject(MAT_BOTTOM_SHEET_DATA)
     public data: {
       votesCount: number;
-      totalSquare: number;
+      totalSquare: string;
       totalVotedSquare: Big;
       answersWeights: Map<string, Big>[];
       columnNames: string[];

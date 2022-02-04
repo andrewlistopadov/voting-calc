@@ -3,17 +3,11 @@ import {ColDef, RowNode, ValueSetterFunc, ValueSetterParams} from 'ag-grid-commu
 const INITIAL_ROWS_LENGTH = 500;
 export const ROWS_TO_BE_ADDED_COUNT = 100;
 
-export function getRowData(columns: string[], rows: string[][]): string[][] {
+export function getAppendedRows(columns: string[], rows: string[][]): string[][] {
   let preparedRows: string[][] = [];
   const rowsCount = rows.length < ROWS_TO_BE_ADDED_COUNT ? INITIAL_ROWS_LENGTH : rows.length + ROWS_TO_BE_ADDED_COUNT;
   for (let i = 0; i < rowsCount; i++) {
-    // const normalizedRow: NormalizedRow = Object.assign({id: uuidv4()} as NormalizedRow, rows[i] || [...columns].fill(''));
     const row: string[] = rows[i] || [...columns].fill('');
-    // Object.defineProperty(normalizedRow, 'id', {
-    //   enumerable: false,
-    //   writable: false,
-    //   value: uuidv4(),
-    // });
     preparedRows.push(row);
   }
   return preparedRows;
@@ -22,7 +16,6 @@ export function getRowData(columns: string[], rows: string[][]): string[][] {
 export function createEmptyRows(rowsCount: number, columnCount: number): string[][] {
   let rows: string[][] = [];
   for (let i = 0; i < rowsCount; i++) {
-    // const normalizedRow: NormalizedRow = Object.assign({id: uuidv4()} as NormalizedRow, Array(columnCount).fill(''));
     const row: string[] = Array(columnCount).fill('');
     rows.push(row);
   }
