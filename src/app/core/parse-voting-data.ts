@@ -13,7 +13,7 @@ export function parseVotingData(dataAsText: string): IParsedVotingData {
   const votingData: string[][] = fixedData
     .split(/$(?:[\t ]*(?:\r?\n|\r))/gm)
     .map((row) => row.split(','))
-    .filter((row) => row.every((i) => i));
+    .filter((row) => row.some((i) => i));
 
   return {
     voteName: votingData[0][0],

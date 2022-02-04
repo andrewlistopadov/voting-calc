@@ -10,7 +10,7 @@ import {downloadCSV} from 'src/app/core/download-file';
 import {getVotingResultsCalculator, VotingResults} from 'src/app/core/get-voting-results-calculator';
 import {IParsedVotingData, parseVotingData} from 'src/app/core/parse-voting-data';
 import {readFileAsText} from 'src/app/core/read-file';
-import {numberRegex} from 'src/app/core/regex';
+import {inspectorNameRegex, numberRegex} from 'src/app/core/regex';
 import {createEmptyRows, getColumnDefs, getDefaultColDef, getAppendedRows as getAppendedRowData} from 'src/app/core/table-builder';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 
@@ -71,7 +71,9 @@ export class VotingCalcPageService {
   }
 
   public exportVotingCalcDataAsCsv(toolbarData: IVotingToolbarData): void {
-    const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.inspectorName},${toolbarData.totalSquare}\r\n`; // `
+    const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.inspectorName?.replace(inspectorNameRegex, '_')},${
+      toolbarData.totalSquare
+    }\r\n`; // `
 
     const columnDefsAsCsv =
       this.gridColumnApi
@@ -115,7 +117,7 @@ export class VotingCalcPageService {
           const properlyParsedFilesData = parsedFilesData.filter((i) => Boolean(i));
           if (properlyParsedFilesData.length === parsedFilesData.length) {
             const main = properlyParsedFilesData[0];
-            const mainIsValid = main!.totalSquare && main!.voteName && main!.columnNames?.length > 0 && !isNaN(main!.totalSquare as any);
+            const mainIsValid = main!.columnNames?.length > 0 && main!.totalSquare && !isNaN(main!.totalSquare as any);
             if (!mainIsValid) {
               this.handleUploadFilesError(`${files[0].name.slice(0, 127)} has incorrect file structure`);
               return;
@@ -188,9 +190,9 @@ export class VotingCalcPageService {
 
   private saveVotingDataToStorage(): void {
     const dataToBeStored: IVotingData = {
-      voteName: this.toolbarData?.voteName || '',
-      inspectorName: this.toolbarData?.inspectorName || '',
-      totalSquare: this.toolbarData?.totalSquare || '',
+      voteName: this.toolbarData?.voteName!,
+      inspectorName: this.toolbarData?.inspectorName!,
+      totalSquare: this.toolbarData?.totalSquare!,
       columnNames: this.gridColumnApi.getAllDisplayedColumns()!.map((i) => i.getColDef().headerName!),
       rowData: this.getRowDataFromGrid(),
     };
