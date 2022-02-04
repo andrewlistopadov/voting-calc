@@ -2,6 +2,9 @@ import {AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnDestroy} fr
 import {CellValueChangedEvent, ColDef, GridReadyEvent} from 'ag-grid-community';
 import Big from 'big.js';
 import {BehaviorSubject, Subject} from 'rxjs';
+import {switchMap, takeUntil, tap} from 'rxjs/operators';
+import {IConfirmDialog} from 'src/app/confirm-dialog/confirm-dialog-options';
+import {ConfirmDialogService} from 'src/app/confirm-dialog/confirm-dialog.service';
 import {WINDOW} from 'src/app/core/window.injection-token';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 import {VotingCalcPageService} from './voting-calc-page.service';
@@ -28,6 +31,8 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   public totalVotedSquare$: Subject<Big | null> = this.votingCalcPageService.totalVotedSquare$;
   public answersWeights$: Subject<Map<string, Big>[]> = this.votingCalcPageService.answersWeights$;
   public columnNames$: Subject<string[]> = this.votingCalcPageService.columnNames$;
+
+  public confirmDialogOpen$: Subject<IConfirmDialog> = this.votingCalcPageService.confirmDialogOpen$;
 
   public filesUploaded(files: File[]): void {
     this.votingCalcPageService.filesUploaded(files);
@@ -61,14 +66,26 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
     } else return null;
   };
 
-  constructor(@Inject(WINDOW) private windowReferenceService: Window, private votingCalcPageService: VotingCalcPageService) {}
+  constructor(
+    @Inject(WINDOW) private windowReferenceService: Window,
+    private votingCalcPageService: VotingCalcPageService,
+    private confirmDialogService: ConfirmDialogService,
+  ) {}
 
   ngAfterViewInit(): void {
-    console.warn('uncomment below');
-    // todo uncomment
-    // this.windowReferenceService.onbeforeunload = this.askLeavePermission;
+    this.windowReferenceService.onbeforeunload = this.askLeavePermission;
     this.votingCalcPageService.restoreVotingDataFromStorage();
     this.votingCalcPageService.startAutoSaving(this.destroy$);
+
+    this.confirmDialogOpen$
+      .pipe(
+        tap((options: IConfirmDialog) => {
+          this.confirmDialogService.open(options);
+        }),
+        switchMap(() => this.confirmDialogService.confirmed()),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((confirmed: boolean) => {});
   }
 
   ngOnDestroy(): void {

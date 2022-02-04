@@ -3,6 +3,7 @@ import {CellValueChangedEvent, ColDef, ColumnApi, GridApi, GridReadyEvent} from 
 import {Big} from 'big.js';
 import {BehaviorSubject, from, of, Subject} from 'rxjs';
 import {bufferCount, catchError, debounceTime, delay, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
+import {getConfirmDialogOptions, IConfirmDialog} from 'src/app/confirm-dialog/confirm-dialog-options';
 import {SessionStorageService} from 'src/app/core/browser-storage-services/session-storage.service';
 import {StorageServiceBase} from 'src/app/core/browser-storage-services/storage-service-base';
 import {downloadCSV} from 'src/app/core/download-file';
@@ -43,12 +44,13 @@ export class VotingCalcPageService {
   public defaultColDef$: BehaviorSubject<ColDef> = new BehaviorSubject({});
   public columnDefs$: BehaviorSubject<ColDef[]> = new BehaviorSubject([] as ColDef[]);
   public rowData$: BehaviorSubject<string[][]> = new BehaviorSubject([] as string[][]);
-  public votingResults$: BehaviorSubject<string[]> = new BehaviorSubject([] as string[]);
 
   public votesCount$: Subject<number> = new Subject();
   public totalVotedSquare$: Subject<Big | null> = new Subject();
   public answersWeights$: Subject<Map<string, Big>[]> = new Subject();
   public columnNames$: Subject<string[]> = new Subject();
+
+  public confirmDialogOpen$: Subject<IConfirmDialog> = new Subject();
 
   private votingResultsCalculator: Map<string, (e: CellValueChangedEvent) => VotingResults> | null = null;
 
@@ -158,11 +160,15 @@ export class VotingCalcPageService {
       .subscribe(() => {});
   }
 
-  private handleUploadFilesError(msg: string): void {
+  private handleUploadFilesError(message: string): void {
     this.noDataYet$.next(true);
+
+    this.defaultColDef$.next({});
+    this.columnDefs$.next([]);
+    this.rowData$.next([]);
+
     this._thereAreUnsavedChanges = false;
-    // todo add dialog
-    console.error(msg);
+    this.confirmDialogOpen$.next(getConfirmDialogOptions({cancelText: '', title: 'Upload file fail', message}));
   }
 
   public restoreVotingDataFromStorage(): void {
