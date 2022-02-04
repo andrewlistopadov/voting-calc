@@ -26,8 +26,11 @@
 </mat-form-field> -->
 <div [class.hidden]="noDataYet" class="toolbar-item-group shown changeable-visibility">
   <span class="toolbar-item read-only" [title]="voteName">{{ voteName }}</span>
-  <span class="toolbar-item read-only" [title]="totalSquare"><span class="lbl">S(&#13217;)&nbsp;=&nbsp;</span>{{ totalSquare }}</span>
-  <input class="toolbar-item" type="text" [(ngModel)]="inspectorName" (ngModelChange)="toolbarDataChanged$.next()" />
+  <!-- <span class="toolbar-item read-only" [title]="totalSquare"><span class="lbl">S(&#13217;)&nbsp;=&nbsp;</span>{{ totalSquare }}</span> -->
+  <span class="toolbar-item toolbar-item--iconed read-only" [title]="totalSquare"
+    ><mat-icon>square_foot</mat-icon><span>{{ totalSquare }}&#13217;</span></span
+  >
+  <input class="toolbar-item toolbar-item--editable" type="text" [(ngModel)]="inspectorName" (ngModelChange)="toolbarDataChanged$.next()" />
 
   <!-- <mat-form-field class="toolbar-item inspector-name">
     <mat-label>Inspector(s) Name</mat-label>

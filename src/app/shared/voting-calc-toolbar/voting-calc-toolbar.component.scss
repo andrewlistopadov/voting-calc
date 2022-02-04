@@ -1,10 +1,12 @@
+@import './../../../styles/color-variables.scss';
+
 :host {
   display: flex;
 }
 
 .toolbar-item-group {
   display: flex;
-  align-items: baseline;
+  align-items: center;
 }
 
 .toolbar-item-group + .toolbar-item-group {
@@ -13,6 +15,28 @@
 
 .toolbar-item {
   flex-shrink: 0;
+}
+
+.toolbar-item--iconed {
+  display: flex;
+  align-items: center;
+}
+
+/* ag-grid alpine */
+.toolbar-item--editable {
+  margin: 0;
+  line-height: 24px;
+  padding-left: 6px;
+  border-radius: 3px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: $gray-border;
+  outline: none;
+
+  &:focus {
+    box-shadow: 0 0 2px 0.1rem $blue-focus;
+    border-color: $blue-focus;
+  }
 }
 
 .toolbar-item-group + .toolbar-item-group {
@@ -27,7 +51,7 @@
 }
 
 .toolbar-item + .toolbar-item {
-  margin-left: 10px;
+  margin-left: 20px;
 }
 
 .toolbar-item--aligned-right {

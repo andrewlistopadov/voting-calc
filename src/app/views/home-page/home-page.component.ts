@@ -65,6 +65,7 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     console.warn('uncomment below');
+    // todo uncomment
     // this.windowReferenceService.onbeforeunload = this.askLeavePermission;
     this.votingCalcPageService.restoreVotingDataFromStorage();
     this.votingCalcPageService.startAutoSaving(this.destroy$);
