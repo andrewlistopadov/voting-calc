@@ -133,7 +133,7 @@ export class VotingCalcPageService {
                   main!.columnNames.every((c, i) => c.localeCompare(current!.columnNames[i]) === 0);
                 if (valid) {
                   allRows.push(...current!.rows);
-                  main!.inspectorName += ', ' + current!.inspectorName;
+                  main!.inspectorName += '_' + current!.inspectorName;
                 } else {
                   this.handleUploadFilesError(`${files[i].name.slice(0, 127)} has incorrect file structure`);
                   return;
