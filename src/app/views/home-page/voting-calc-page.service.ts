@@ -37,8 +37,8 @@ export class VotingCalcPageService {
   }
 
   public voteName$: Subject<string | null> = new Subject();
-  public inspectorName$: Subject<string | null> = new Subject();
   public totalSquare$: Subject<string | null> = new Subject();
+  public inspectorName$: Subject<string | null> = new Subject();
   public noDataYet$: BehaviorSubject<boolean> = new BehaviorSubject(Boolean(true));
 
   public defaultColDef$: BehaviorSubject<ColDef> = new BehaviorSubject({});
@@ -191,8 +191,8 @@ export class VotingCalcPageService {
   private saveVotingDataToStorage(): void {
     const dataToBeStored: IVotingData = {
       voteName: this.toolbarData?.voteName!,
-      inspectorName: this.toolbarData?.inspectorName!,
       totalSquare: this.toolbarData?.totalSquare!,
+      inspectorName: this.toolbarData?.inspectorName!,
       columnNames: this.gridColumnApi.getAllDisplayedColumns()!.map((i) => i.getColDef().headerName!),
       rowData: this.getRowDataFromGrid(),
     };
@@ -216,12 +216,12 @@ export class VotingCalcPageService {
     this._thereAreUnsavedChanges = true;
   }
 
-  private setToolbarData({voteName, inspectorName, totalSquare}: IVotingToolbarData): void {
-    this.toolbarData = {voteName, inspectorName, totalSquare};
+  private setToolbarData({voteName, totalSquare, inspectorName}: IVotingToolbarData): void {
+    this.toolbarData = {voteName, totalSquare, inspectorName};
 
     this.voteName$.next(voteName);
-    this.inspectorName$.next(inspectorName);
     this.totalSquare$.next(totalSquare);
+    this.inspectorName$.next(inspectorName);
   }
 
   private setTableData(columnDefs: ColDef[], rowData: string[][]): void {

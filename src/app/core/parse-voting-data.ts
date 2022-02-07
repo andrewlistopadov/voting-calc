@@ -17,8 +17,8 @@ export function parseVotingData(dataAsText: string): IParsedVotingData {
 
   return {
     voteName: votingData[0][0],
-    inspectorName: votingData[0][1],
-    totalSquare: votingData[0][2],
+    totalSquare: votingData[0][1],
+    inspectorName: votingData[0][2],
     columnNames: votingData[1],
     rows: votingData.slice(2),
   };

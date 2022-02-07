@@ -19,8 +19,8 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
   public destroy$: Subject<void> = new Subject<void>();
 
   public voteName$: Subject<string | null> = this.votingCalcPageService.voteName$;
-  public inspectorName$: Subject<string | null> = this.votingCalcPageService.inspectorName$;
   public totalSquare$: Subject<string | null> = this.votingCalcPageService.totalSquare$;
+  public inspectorName$: Subject<string | null> = this.votingCalcPageService.inspectorName$;
   public noDataYet$: BehaviorSubject<boolean> = this.votingCalcPageService.noDataYet$;
 
   public defaultColDef$: BehaviorSubject<ColDef> = this.votingCalcPageService.defaultColDef$;

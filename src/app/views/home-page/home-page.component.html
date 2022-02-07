@@ -1,7 +1,7 @@
 <voting-calc-toolbar
   [voteName]="voteName$ | async"
-  [inspectorName]="inspectorName$ | async"
   [totalSquare]="totalSquare$ | async"
+  [inspectorName]="inspectorName$ | async"
   [noDataYet]="(noDataYet$ | async)!"
   (filesUploaded)="filesUploaded($event)"
   (addRows)="addRows($event)"
