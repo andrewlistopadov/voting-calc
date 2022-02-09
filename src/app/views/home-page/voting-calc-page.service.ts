@@ -10,7 +10,7 @@ import {downloadCSV} from 'src/app/core/download-file';
 import {getVotingResultsCalculator, VotingResults} from 'src/app/core/get-voting-results-calculator';
 import {IParsedVotingData, parseVotingData} from 'src/app/core/parse-voting-data';
 import {readFileAsText} from 'src/app/core/read-file';
-import {inspectorNameRegex, numberRegex} from 'src/app/core/regex';
+import {inspectorNameRegex, numericRegexWithDotSeparator} from 'src/app/core/regex';
 import {createEmptyRows, getColumnDefs, getDefaultColDef, getAppendedRows as getAppendedRowData} from 'src/app/core/table-builder';
 import {IVotingToolbarData} from 'src/app/shared/voting-calc-toolbar/voting-calc-toolbar.component';
 
@@ -71,9 +71,10 @@ export class VotingCalcPageService {
   }
 
   public exportVotingCalcDataAsCsv(toolbarData: IVotingToolbarData): void {
-    const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.inspectorName?.replace(inspectorNameRegex, '_')},${
-      toolbarData.totalSquare
-    }\r\n`; // `
+    const toolbarDataAsCsv = `${toolbarData.voteName},${toolbarData.totalSquare},${toolbarData.inspectorName?.replace(
+      inspectorNameRegex,
+      '_',
+    )}\r\n`; // `
 
     const columnDefsAsCsv =
       this.gridColumnApi
@@ -245,7 +246,7 @@ export class VotingCalcPageService {
       let checksum = 0;
 
       row[0] && ++votesCount && ++checksum;
-      const weightExists = numberRegex.test(row[1]);
+      const weightExists = numericRegexWithDotSeparator.test(row[1]);
 
       if (weightExists) {
         checksum++;

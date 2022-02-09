@@ -1,4 +1,5 @@
 import {ColDef, RowNode, ValueSetterFunc, ValueSetterParams} from 'ag-grid-community';
+import {numericRegexWithCommaSeparator, numericRegexWithDotSeparator} from './regex';
 
 const INITIAL_ROWS_LENGTH = 500;
 export const ROWS_TO_BE_ADDED_COUNT = 100;
@@ -29,7 +30,8 @@ const collator = new Intl.Collator(['ru', 'en-GB', 'en-US'], {
 });
 
 const valueSetter: ValueSetterFunc = (params: ValueSetterParams): boolean => {
-  const newValue = isNaN(params.newValue) ? '' : params.newValue;
+  const fixedNewValue = (numericRegexWithCommaSeparator.test(params.newValue) && params.newValue?.replace(',', '.')) || params.newValue;
+  const newValue = fixedNewValue && numericRegexWithDotSeparator.test(fixedNewValue) ? fixedNewValue : '';
   params.data[params.colDef.field!] = newValue;
   return newValue !== params.oldValue;
 };
