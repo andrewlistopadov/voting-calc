@@ -19,14 +19,15 @@ export class VotingCalcResultsSheetComponent implements OnInit {
   public columnNames: string[] = [];
   public colResults: string[] = [];
 
-  public calcColResults(answersWeight: Map<string, Big>, colName: string): string {
+  private calcColResults(answersWeight: Map<string, Big>, colName: string): string {
     let total = new Big(0);
     const options: [string, Big][] = [];
     let max: [string, Big] = ['', new Big(0)];
+    const zero = new Big(0);
 
     [...answersWeight.entries()].forEach((e: [string, Big]) => {
       total = total.plus(e[1]);
-      options.push(e);
+      e[1].gt(zero) && options.push(e);
       max = e[1]!.gt(max[1]) ? e : max;
     });
 
